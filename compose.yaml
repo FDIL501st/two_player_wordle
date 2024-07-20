@@ -1,0 +1,67 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  graphql-server:
+    container_name: graphql_server
+    build:
+      context: ./graphql_server
+      target: final
+    ports:
+      - ${ROCKET_PORT}:${ROCKET_PORT}
+    environment:
+      - ROCKET_DATABASES={mongodb={url=${MONGO_CONNECTION_URL}}}
+      - ROCKET_PORT=${ROCKET_PORT}
+    # this should only run once mongodb container is healthy
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+        restart: true
+
+  mongo-db:
+    image: mongo
+    container_name: ${MONGO_CONTAINER_NAME}
+    restart: always
+    expose:
+      - 27017
+      # this is the port mongo container uses, as we want our other services to be able to connect to it
+    volumes:
+      - mongo_volume:/data/db 
+      - mongo_volume:/data/configdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
+      # if container can be pinged to, the cmd returns 1
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+  mongo-express:
+    container_name: mongodb-admin-ui
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_URL: ${MONGO_CONNECTION_URL}
+      ME_CONFIG_BASICAUTH: false
+    # this should only run once mongodb container is healthy
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+        restart: true
+
+  # mongo-express able to connect to mongo-db
+  # however graphql_server was not responding on web
+
+volumes:
+  mongo_volume:
+    name: 2p_wordle_db
