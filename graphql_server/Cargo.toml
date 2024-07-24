@@ -4,9 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-juniper = "0.16.1"
+juniper = { version= "0.16.1", features=["uuid"]}
 juniper_rocket = "0.9.0"
-mongodb = "3.0.1"
 rocket = "0.5.1"
 rocket_db_pools = { version = "0.2.0", features = ["mongodb"]}
 serde = { version = "1.0.204", features = ["derive"]}
+serde_json = { version = "1.0.120", features = ["std"]}
+
+[dependencies.uuid]
+version = "1.10.0"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+    "serde",             # Allow for seralization of uuid
+]
