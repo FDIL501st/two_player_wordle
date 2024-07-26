@@ -1,8 +1,11 @@
-use crate::game_collection;
-use juniper::{graphql_object, FieldResult};
+use super::{
+    errors::{GraphqlServerError, CODE404, CODE500},
+    game_collection,
+    models::Game,
+    MongoClient,
+};
+use juniper::{graphql_object, FieldResult, IntoFieldError};
 use rocket_db_pools::mongodb::{bson::doc, Collection};
-
-use super::{models::Game, MongoClient};
 
 /// Root query node
 pub struct Query;
@@ -14,6 +17,7 @@ impl Query {
         "1.0"
     }
 
+    /// Get all games
     async fn games(context: &MongoClient) -> FieldResult<Vec<Game>> {
         let games: Collection<Game> = game_collection(context);
 
@@ -30,6 +34,31 @@ impl Query {
 
                 Ok(all_games)
             }
+        }
+    }
+
+    /// Get a game
+    async fn game(context: &MongoClient, id: String) -> FieldResult<Game> {
+        // get game_id
+        let game_id = Game::parse_id(&id)?;
+
+        let games: Collection<Game> = game_collection(context);
+
+        let query_result = games.find_one(doc! {"_id": &game_id}, None).await;
+
+        match query_result {
+            Ok(game) => match game {
+                None => Err(
+                    GraphqlServerError::new("No game with id found".to_string(), &CODE404)
+                        .into_field_error(),
+                ),
+                Some(game) => Ok(game),
+            },
+            Err(_) => Err(GraphqlServerError::new(
+                "Failed to execute find game query".to_string(),
+                &CODE500,
+            )
+            .into_field_error()),
         }
     }
 }

@@ -4,11 +4,11 @@ It is recommended to run with docker compose.
 
 ## Running with docker compose
 
-You will need a .env file in the parent directory as [compose.yaml](compose.yaml) uses some enviroment variables.
+You will need a .env file in the parent directory as [compose.yaml](compose.yaml) uses some environment variables.
 
 ### .env file 
-[example.env](example.env) is what your .env file can look like. It contains all the enviroment variables that needs to be defined.
-**MONGO_CONNECTION_URL** should be copied as is. It is formatted to work dependent on the values of the other enviroment variables.  All the other ones can have their values changed. 
+[example.env](example.env) is what your .env file can look like. It contains all the environment variables that needs to be defined.
+**MONGO_CONNECTION_URL** should be copied as is. It is formatted to work dependent on the values of the other environment variables.  All the other ones can have their values changed. 
 
 **ROCKET_PORT** is the port number that the backend server port will run on. You should choose a port that isn't already in use.
 

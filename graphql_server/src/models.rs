@@ -1,4 +1,5 @@
 // This file contains the models/objects represented within the graphql server
+use super::errors::{GraphqlServerError, GraphqlServerResult, CODE422};
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -80,7 +81,6 @@ pub struct Game {
     // that is hard to recreate as a rust object when trying to query from this server
     // as uuid doesn't properly serialize into bson for queries
     // and can't use bson::uuid type for a GraphQLObject which does serialize well
-
     /// The current round that is being played.
     current_round: Round,
 
@@ -104,6 +104,26 @@ impl Game {
             p1_points: 0,
             p2_points: 0,
             round_num: 0,
+        }
+    }
+
+    /// Parses an id in some string format into the string format ```Game``` uses.
+    ///
+    /// # Errors
+    ///
+    /// Will throw a 422 error if the id provided isn't a valid uuid.
+    pub fn parse_id(id: &String) -> GraphqlServerResult<String> {
+        // will convert into a uuid, then back into the simple string format
+
+        let uuid_result = Uuid::try_parse(&id);
+
+        match uuid_result {
+            Ok(uuid) => Ok(uuid.simple().to_string()),
+
+            Err(_) => Err(GraphqlServerError::new(
+                "id provided should be in the format of a uuid".to_string(),
+                &CODE422,
+            )),
         }
     }
 }

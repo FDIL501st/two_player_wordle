@@ -1,12 +1,11 @@
-use juniper::{graphql_object, FieldResult, IntoFieldError};
-use rocket_db_pools::mongodb::{bson::doc, Collection};
-use uuid::Uuid;
 use super::{
-    errors::{GraphqlServerError, CODE500,CODE422},
+    errors::{GraphqlServerError, CODE500},
     game_collection,
     models::Game,
     MongoClient,
 };
+use juniper::{graphql_object, FieldResult, IntoFieldError};
+use rocket_db_pools::mongodb::{bson::doc, Collection};
 
 /// Root Mutation node
 pub struct Mutation;
@@ -46,16 +45,7 @@ impl Mutation {
     async fn remove_game(context: &MongoClient, id: String) -> FieldResult<bool> {
         let games: Collection<Game> = game_collection(context);
 
-        // convert string to simple uuid format (in case its in a different uuid format)
-        let uuid_result = Uuid::try_parse(&id);
-        if uuid_result.is_err() {
-            return Err(
-                GraphqlServerError::new("id provided should be in the format of a uuid".to_string(), &CODE422)
-                    .into_field_error()
-            )
-        }
-        let uuid = uuid_result.unwrap();
-        let game_id = uuid.simple().to_string();
+        let game_id = Game::parse_id(&id)?;
         let delete_query = doc! {"_id": &game_id};
         let delete_result = games.delete_one(delete_query, None).await;
         // for some reason this is not deleting, even if I copy id
@@ -63,10 +53,11 @@ impl Mutation {
             // TODO: Update Ok section
             // Can get an Ok even if delete nothing
             // Meaning only get an Err if simply failed to execute the delete
-            Err(_) => Err(
-                GraphqlServerError::new("Failed to execute delete".to_string(), &CODE500)
-                    .into_field_error(),
-            ),
+            Err(_) => Err(GraphqlServerError::new(
+                "Failed to execute delete".to_string(),
+                &CODE500,
+            )
+            .into_field_error()),
             // return true if deleted a game
             Ok(delete_result) => Ok(delete_result.deleted_count == 1),
         }

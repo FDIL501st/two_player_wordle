@@ -42,9 +42,8 @@ pub static CODE422: StaticCode = (422, "Unprocessable Content");
 /// 500: Internal Server Error
 pub static CODE500: StaticCode = (500, "Internal Server Error");
 
-
 /// an alias for ```Result<T, GraphqlError>```
-pub type GraphqlResult<T> = Result<T, GraphqlServerError>;
+pub type GraphqlServerResult<T> = Result<T, GraphqlServerError>;
 
 impl GraphqlServerError {
     /// Creates a GraphqlError given ```message``` and a static```code```
