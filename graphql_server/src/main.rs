@@ -1,8 +1,7 @@
 use graphql_server::build_rocket;
 
-#[macro_use] extern crate rocket;
-
-
+#[macro_use]
+extern crate rocket;
 
 #[launch]
 fn rocket() -> _ {
