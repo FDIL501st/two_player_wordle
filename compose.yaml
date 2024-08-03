@@ -14,10 +14,10 @@ services:
       context: ./graphql_server
       target: final
     ports:
-      - ${ROCKET_PORT}:${ROCKET_PORT}
+      - ${GRAPHQL_PORT}:${GRAPHQL_PORT}
     environment:
       - ROCKET_DATABASES={mongodb={url=${MONGO_CONNECTION_URL}}}
-      - ROCKET_PORT=${ROCKET_PORT}
+      - GRAPHQL_PORT=${GRAPHQL_PORT}
     # this should only run once mongodb container is healthy
     depends_on:
       mongo-db:
