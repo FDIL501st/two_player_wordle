@@ -4,7 +4,7 @@ use super::{
     models::Game,
     MongoClient,
 };
-use juniper::{graphql_object, FieldResult, IntoFieldError};
+use juniper::{graphql_object, FieldError, FieldResult, IntoFieldError};
 use rocket_db_pools::mongodb::{bson::doc, Collection};
 
 /// Root Mutation node
@@ -23,16 +23,50 @@ impl Mutation {
     ///
     /// This function will return an error if failed to create a new game.
     /// Most likely cause is being unable to connect to the database.
-    async fn new_game(context: &MongoClient) -> FieldResult<bool> {
+    async fn new_game(context: &MongoClient) -> FieldResult<String> {
         let games: Collection<Game> = game_collection(context);
 
-        let new_game = Game::new_game("words");
+        let mut new_game = Game::new_game("words");
 
-        let insert_result = games.insert_one(new_game, None).await;
-        match insert_result {
-            // TODO: Upon error, see if its due to conflicting id then try again, or return a 500 Internal Server Error
-            Err(_) => Ok(false),
-            Ok(_) => Ok(true),
+        let mut attempt: u8 = 0;
+        let max_retry: u8 = 2;
+        loop {
+            let insert_one_result = games.insert_one(&new_game, None).await;
+            return match insert_one_result {
+                Err(_) => {
+                    // let it retry with new id, as it is possible if try to insert duplicate id
+                    // duplicate id can occur, though rare
+                    if attempt < max_retry {
+                        attempt += 1;
+                        new_game.new_id();
+                        continue;
+                    }
+                    
+                    Err(GraphqlServerError::new(
+                        "Failed to execute insert".to_string(),
+                        &CODE500,
+                        )
+                        .into_field_error())
+                }
+                // simply return the id of the game created
+                Ok(_) => Ok(new_game.id()),
+            }
+        }
+
+    }
+
+    /// Testing creation of new game by providing a id instead of letting program generate one.
+    async fn test_new_game(context: &MongoClient, id: String) -> FieldResult<String> {
+        let games: Collection<Game> = game_collection(context);
+
+        let mut new_game = Game::new_game("words");
+        new_game.set_id(&id);
+
+        let insert_one_result = games.insert_one(&new_game, None).await;
+        match insert_one_result {
+            Err(e) => Err(FieldError::from(e)),
+            // simply return the id of the game created
+            Ok(_) => Ok(new_game.id()),
         }
     }
 
@@ -47,9 +81,9 @@ impl Mutation {
 
         let game_id = Game::parse_id(&id)?;
         let delete_query = doc! {"_id": &game_id};
-        let delete_result = games.delete_one(delete_query, None).await;
-        // for some reason this is not deleting, even if I copy id
-        match delete_result {
+        let delete_one_result = games.delete_one(delete_query, None).await;
+
+        match delete_one_result {
             // TODO: Update Ok section
             // Can get an Ok even if delete nothing
             // Meaning only get an Err if simply failed to execute the delete

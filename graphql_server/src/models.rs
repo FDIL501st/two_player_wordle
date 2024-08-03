@@ -1,8 +1,10 @@
-// This file contains the models/objects represented within the graphql server
-use super::errors::{GraphqlServerError, GraphqlServerResult, CODE422};
 use juniper::{GraphQLEnum, GraphQLInputObject, GraphQLObject};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
+
+use super::errors::{GraphqlServerError, GraphqlServerResult, CODE422};
+
+// This file contains the models/objects represented within the graphql server
 
 /// A turn turn made by some player.
 #[derive(Debug, GraphQLObject, Serialize, Deserialize)]
@@ -72,6 +74,15 @@ impl Round {
     }
 }
 
+/// An argument with info needed to update a round whenever a turn is made.
+#[derive(Debug, GraphQLInputObject, Serialize, Deserialize)]
+pub struct UpdateRound {
+    game_id: String,
+    turn: NewTurn,
+    letterpool: i32,
+    next_player: Player,
+}
+
 /// A game that is currently active/being played.
 #[derive(Debug, GraphQLObject, Serialize, Deserialize)]
 pub struct Game {
@@ -105,6 +116,28 @@ impl Game {
             p2_points: 0,
             round_num: 0,
         }
+    }
+
+    /// Gets the id of the game
+    pub fn id(&self) -> String {
+        self._id.clone()
+    }
+
+    /// Provide a new id for the game, as if making a new game.
+    pub fn new_id(&mut self) {
+        self._id = Uuid::new_v4().simple().to_string();
+    }
+
+    /// Sets the id of the game.
+    /// Does nothing if id format is incorrect.
+    pub fn set_id(&mut self, id: &String) {
+        let check = Self::parse_id(id);
+
+        if check.is_ok() {
+            self._id = id.clone();
+        }
+
+        // else do nothing
     }
 
     /// Parses an id in some string format into the string format ```Game``` uses.
