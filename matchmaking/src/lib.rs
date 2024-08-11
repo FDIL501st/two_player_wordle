@@ -14,8 +14,6 @@ extern crate serde;
 use lazy_static::lazy_static;
 use rocket::Build;
 use rocket_db_pools::mongodb::bson::doc;
-use rocket_db_pools::mongodb::Client;
-use rocket_db_pools::Database;
 use std::env;
 use std::sync::Arc;
 use tokio::sync::{Barrier, Semaphore};
@@ -26,15 +24,20 @@ lazy_static! {
         .unwrap_or("10000".to_string())
         .parse()
         .expect("GRAPHQL_PORT should be an unsigned integer.");
+
+    /// Port the client server is hosted on
+    pub static ref CLIENT_PORT: u32 = env::var("CLIENT_PORT")
+        .unwrap_or("3000".to_string())
+        .parse()
+        .expect("CLIENT_PORT should be an unsigned integer.");
 }
 
-/// mongodb connection
-#[derive(Database)]
-#[database("mongodb")]
-pub struct MongoClient(Client);
 
 /// The join_game endpoint used by clients to join a matchmaking queue when trying to join a game
 pub mod join_game;
+
+/// cors header definitions to attach to server
+pub mod cors;
 
 /// Builds a rocket server, so all main has to do is launch it
 pub fn build_rocket() -> rocket::Rocket<Build> {
@@ -48,13 +51,15 @@ pub fn build_rocket() -> rocket::Rocket<Build> {
     let tx = Arc::new(tx);
     let rx = Arc::new(rx);
 
+    let cors = cors::cors_options();
+
     rocket::build()
-        .attach(MongoClient::init())
         .manage(barrier)
         .manage(sem)
         .manage(tx)
         .manage(rx)
         .mount("/", routes![index, join_game::join_game])
+        .attach(cors)
 }
 
 /// Index route that is simply used to tell that the server is running
