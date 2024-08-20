@@ -1,0 +1,60 @@
+'use server'
+
+import {Game, NewGameResponse} from "@game/games/types";
+import {generate_graphql_query_request, MATCHMAKING_PORT} from "@app/constants";
+
+
+/** Connects the client to a new game.
+ * Returns the game_id of the game the client has joined and which player they are.
+ * */
+async function new_game(): Promise<NewGameResponse> {
+  // Send a request to matchmaking server to join a new game
+
+  const url: string = `http://localhost:${MATCHMAKING_PORT}/join_game`
+
+  // don't want to cache, want a new game every time from every different client
+  let response = await fetch(url, {cache: 'no-store'})
+
+  if (!response.ok) {
+    // got an error response
+    throw new Error("Had an error occur getting a response from the matchmaking server.")
+  }
+
+  let obj: NewGameResponse = await response.json()
+
+  return {
+    game_id: obj.game_id,
+    player_type: obj.player_type
+  }
+}
+
+type GamesResponseJson = {
+  data: {
+    games: Game[]
+  }
+}
+
+/**
+ * Gets all games from graphql server.
+ */
+async function get_all_games(): Promise<Game[]> {
+  const query: string = "{games{id}}"
+  const all_games_get_request: string = generate_graphql_query_request(query)
+
+  // send request for all games
+  const all_games = await fetch(all_games_get_request, {cache: 'no-store'})
+
+  if (!all_games.ok) {
+    // error
+    return []
+  }
+
+  const games_json: GamesResponseJson = await all_games.json()
+
+  return games_json.data.games
+}
+
+export {
+  new_game,
+  get_all_games
+}
