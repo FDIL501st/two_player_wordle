@@ -1,5 +1,10 @@
-import GamesController from "@game/games/gamesController";
+'use client'
+
+import GamesController from "@games/gamesController";
+
 
 export default function GamesPage() {
-  return <GamesController />
+  return(
+      <GamesController />
+  )
 }

@@ -1,32 +1,31 @@
 'use client'
 
-import GamesView from "@game/games/gamesView";
-import {Game} from "@game/games/types";
-import {useEffect, useState} from "react";
-import {get_all_games} from "@game/games/server";
+import GamesView from "@games/gamesView";
+import {useQuery} from "@apollo/client";
+import {gql} from "@/__generated__";
 
+const GET_GAMES = gql(/* GRAPHQL */ `
+  query GetGames {
+    games {
+      id,
+      p1Points,
+      p2Points,
+      roundNum
+    }
+  }
+`)
 
 const GamesController = () => {
-  const [games, setGames] = useState<Game[]>([] as Game[])
-
   // current games list refresh rate in milliseconds
   const refresh_rate_ms: number = 5000
 
-  // update games every refresh_rate
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // get all games from graphql server and store it
-      get_all_games().then((games) => {
-        setGames(games)
-      })
-    }, refresh_rate_ms)
-
-    // clear interval every time leave page
-    return () => clearInterval(interval)
-  }, [])
+  // get games from graphql server
+  const { loading, error, data } = useQuery(GET_GAMES, {
+    pollInterval: refresh_rate_ms
+  });
 
   return(
-    <GamesView games={games} />
+    <GamesView loading={loading} error={error} data={data}/>
   )
 }
 

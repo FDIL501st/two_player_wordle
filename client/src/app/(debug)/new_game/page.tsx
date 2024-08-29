@@ -2,9 +2,21 @@
 
 import {useEffect, useState} from "react";
 import {Game, NewGameResponse} from "@debug/new_game/types";
-import create_newGame from "@debug/new_game/server";
+import {create_newGame} from "@debug/new_game/server";
+import {ApolloProvider, useQuery} from "@apollo/client";
+import client from "@app/apollo-client";
+import {gql} from "@/__generated__";
 
-export default function NewGame() {
+const GET_ALL_GAMES = gql(/* GRAPHQL */ `
+  query GetAllGames {
+    games {
+      id
+    }
+  }
+`)
+// gql must be within a client component
+
+function NewGame() {
 
     const [game, setGame] = useState(new NewGameResponse())
     function get_new_game() {
@@ -26,25 +38,48 @@ export default function NewGame() {
     return () => clearInterval(interval)
   }, [])
 
+  // get all games every 1s
+  const { loading, error, data } = useQuery(GET_ALL_GAMES, {
+    pollInterval: 1000
+  });
+
     return (
-        <main className="flex min-h-screen flex-col items-center justify-between p-24">
-            <div>
-                2 player wordle client new game connection
-            </div>
-            <div>
-              Counter: {counter}
-            </div>
-            {/*<NewGameButton setGameID={setGameID} setPlayer={setPlayer} />*/}
-            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    onClick={get_new_game}
-            >
-                Join a new game
-            </button>
-            <div>
-                gameID: {game.game_id}
-                <br/>
-                player: {game.player_type}
-            </div>
-        </main>
+      <main className="flex min-h-screen flex-col items-center justify-between p-24">
+        <div>
+          2 player wordle client new game connection
+        </div>
+        <div>
+          Counter: {counter}
+        </div>
+        {/*<NewGameButton setGameID={setGameID} setPlayer={setPlayer} />*/}
+        <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={get_new_game}
+        >
+          Join a new game
+        </button>
+        <div>
+          gameID: {game.game_id}
+          <br/>
+          player: {game.player_type}
+        </div>
+
+        <div>
+          {loading && <p>Loading...</p>}
+          {error && <p>{error.message}</p>}
+          {data && (
+              <div>
+                {data.games.map(game => <p key={game.id}>{game.id}</p>)}
+              </div>
+          )}
+        </div>
+      </main>
     );
+}
+
+export default function Page() {
+  return(
+    <ApolloProvider client={client}>
+      <NewGame />
+    </ApolloProvider>
+  )
 }

@@ -20,8 +20,10 @@
     "paths": {
       "@/*": ["./src/*"],
       "@app/*": ["./src/app/*"],
-      "@debug/*": ["./src/app/(debug)/*"],
-      "@game/*": ["./src/app/(game)/*"]
+      "@(debug)/*": ["./src/app/(debug)/*"],
+      "@(game)/*": ["./src/app/(game)/*"],
+      "@games/*": ["./src/app/(game)/games/*"],
+      "@game/*": ["./src/app/(game)/game/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

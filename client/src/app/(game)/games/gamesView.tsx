@@ -1,22 +1,22 @@
 'use client'
 
-import {Game} from "@game/games/types";
+import {ApolloError} from "@apollo/client";
+import {GetGamesQuery} from "@/__generated__/graphql";
+import Separator from "@games/components/Separator";
+import OngoingGames from "@games/components/OngoingGames";
+import NewGameButton from "@games/components/NewGameButton";
 
-interface Games {
-  games: Game[]
+interface QueryResult {
+  loading: boolean,
+  error: ApolloError | undefined,
+  data: GetGamesQuery | undefined
 }
-
-const GamesView = ({games}: Games) => {
+const GamesView = ({loading, error, data}: QueryResult) => {
   return(
     <div>
       <NewGameButton />
       <Separator />
-      {games.map((game) => (
-        <div key={game.id}>
-          {game.id}
-        </div>
-      ))}
-
+      <OngoingGames loading={loading} error={error} games={data?.games} />
     </div>
   )
 }
@@ -24,26 +24,3 @@ const GamesView = ({games}: Games) => {
 export default GamesView
 
 
-const Separator = () => {
-  return(
-    <div>
-      RUNNING GAMES
-    </div>
-  )
-}
-
-const NewGameButton = () => {
-  return(
-    <button>
-      New Game
-    </button>
-  )
-}
-
-const CurrentGame = ({game}: {game: Game}) => {
-  return(
-    <div>
-      {game.id}
-    </div>
-  )
-}

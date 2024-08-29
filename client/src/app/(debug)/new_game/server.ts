@@ -1,6 +1,6 @@
+'use server'
 
-
-import {Game, Player} from "@debug/new_game/types";
+import {Game} from "@(debug)/new_game/types";
 
 // need to get this value from an env variable
 const MATCHMAKING_PORT = 10001
@@ -27,4 +27,6 @@ async function create_newGame(): Promise<Game> {
     // can only pass along js plain objects (not classes) from server to client components
 }
 
-export default create_newGame
+export {
+  create_newGame,
+}
