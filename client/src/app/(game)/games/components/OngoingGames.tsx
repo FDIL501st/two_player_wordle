@@ -1,13 +1,15 @@
+'use client'
 
-import {ApolloError} from "@apollo/client";
 import {Game} from "@games/types";
+import {useContext} from "react";
+import GamesQueryContext from "@games/GamesQueryContext";
 
-interface AllGamesQueryResult {
-  loading: boolean,
-  error: ApolloError | undefined,
-  games: Game[] | undefined
-}
-const OngoingGames = ({loading, error, games}: AllGamesQueryResult) => {
+const OngoingGames = () => {
+
+  const {loading, error, data} = useContext(GamesQueryContext)
+
+  const games = data?.games
+
   if (loading) return <h1>Loading</h1>
 
   if (error) return <h3>{error.message}</h3>

@@ -2,7 +2,9 @@
 Defines types used within /games route
  */
 
-import {GetGamesQueryResult} from "@/__generated__/graphql";
+import 'server-only'
+import {GetGamesQuery, GetGamesQueryResult} from "@/__generated__/graphql";
+import {ApolloError} from "@apollo/client";
 
 /*
 The type of client/player communicating with the game.
@@ -17,3 +19,9 @@ enum Client {
 export type NewGameResponse = {game_id: string, player_type: Client}
 
 export type Game = GetGamesQueryResult
+
+export type QueryResult = {
+  loading: boolean,
+  error: ApolloError | undefined,
+  data: GetGamesQuery | undefined
+}

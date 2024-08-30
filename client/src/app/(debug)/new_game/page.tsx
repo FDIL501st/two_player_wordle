@@ -1,8 +1,8 @@
 'use client'
 
 import {useEffect, useState} from "react";
-import {Game, NewGameResponse} from "@debug/new_game/types";
-import {create_newGame} from "@debug/new_game/server";
+import {Game, NewGameResponse} from "@(debug)/new_game/types";
+import {create_newGame} from "@(debug)/new_game/server";
 import {ApolloProvider, useQuery} from "@apollo/client";
 import client from "@app/apollo-client";
 import {gql} from "@/__generated__";

@@ -1,17 +1,12 @@
-'use client'
+import {Children} from "@app/types";
+import ApolloClientProvider from "@app/ApolloClientProvider";
 
-import { ApolloProvider } from '@apollo/client';
-import React from "react";
-import client from "@app/apollo-client";
-
-
-type Children = Readonly<{ children: React.ReactNode }>
 
 function GameLayout({children}: Children) {
   return (
-    <ApolloProvider client={client}>
+    <ApolloClientProvider>
       {children}
-    </ApolloProvider>
+    </ApolloClientProvider>
   );
 }
 

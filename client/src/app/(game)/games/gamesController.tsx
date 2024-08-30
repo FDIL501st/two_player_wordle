@@ -1,6 +1,7 @@
 'use client'
 
 import GamesView from "@games/gamesView";
+import GamesQueryContext from "@games/GamesQueryContext";
 import {useQuery} from "@apollo/client";
 import {gql} from "@/__generated__";
 
@@ -25,7 +26,9 @@ const GamesController = () => {
   });
 
   return(
-    <GamesView loading={loading} error={error} data={data}/>
+    <GamesQueryContext.Provider value={{loading, error, data}}>
+      <GamesView />
+    </GamesQueryContext.Provider>
   )
 }
 

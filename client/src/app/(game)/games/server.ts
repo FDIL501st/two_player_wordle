@@ -1,5 +1,3 @@
-'use server'
-
 import { NewGameResponse} from "@games/types";
 import {MATCHMAKING_PORT} from "@app/constants";
 
