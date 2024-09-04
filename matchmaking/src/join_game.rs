@@ -46,6 +46,9 @@ pub async fn join_game(
     let json = match barrier_result.is_leader() {
         true => {
             let game_id = create_game().await;
+
+            println!("{:?}", game_id);
+
             sender
                 .send(game_id.clone())
                 .expect("game_id sender should work");

@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 rocket = { version = "0.5.1", features = ["json"] }
 rocket_db_pools = { version = "0.2.0", features = ["mongodb"]}
+rocket_cors = { version = "0.6.0", default-features = false }
 tokio = { version = "1.39.2", features = ["sync"] }
 serde = { version = "1.0.204", features = ["derive"]}
 reqwest = { version = "0.12.5", features = ["json"] }

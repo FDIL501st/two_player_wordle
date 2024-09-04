@@ -41,18 +41,16 @@ impl Mutation {
                         new_game.new_id();
                         continue;
                     }
-                    
-                    Err(GraphqlServerError::new(
-                        "Failed to execute insert".to_string(),
-                        &CODE500,
-                        )
-                        .into_field_error())
+
+                    Err(
+                        GraphqlServerError::new("Failed to execute insert".to_string(), &CODE500)
+                            .into_field_error(),
+                    )
                 }
                 // simply return the id of the game created
                 Ok(_) => Ok(new_game.id()),
-            }
+            };
         }
-
     }
 
     /// Testing creation of new game by providing a id instead of letting program generate one.
@@ -84,7 +82,6 @@ impl Mutation {
         let delete_one_result = games.delete_one(delete_query, None).await;
 
         match delete_one_result {
-            // TODO: Update Ok section
             // Can get an Ok even if delete nothing
             // Meaning only get an Err if simply failed to execute the delete
             Err(_) => Err(GraphqlServerError::new(
@@ -94,6 +91,28 @@ impl Mutation {
             .into_field_error()),
             // return true if deleted a game
             Ok(delete_result) => Ok(delete_result.deleted_count == 1),
+        }
+    }
+
+    /// Removes all games from the database.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if failed to delete the query.
+    /// Most likely cause is a connection error to database.
+    async fn remove_games(context: &MongoClient) -> FieldResult<bool> {
+        let games: Collection<Game> = game_collection(context);
+        let delete_many_result = games.delete_many(doc! {}, None).await;
+
+        match delete_many_result {
+            Err(_) => Err(GraphqlServerError::new(
+                "Failed to execute all deletes".to_string(),
+                &CODE500,
+            )
+            .into_field_error()),
+
+            // return true if delete occureed
+            Ok(_) => Ok(true),
         }
     }
 }
