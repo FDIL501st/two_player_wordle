@@ -1,10 +1,10 @@
 'use client'
 
-import {Game} from "@games/types";
+import {Game} from "@(game)/types";
 import {useContext} from "react";
 import GamesQueryContext from "@games/GamesQueryContext";
 
-const OngoingGames = () => {
+const OngoingGamesList = () => {
 
   const {loading, error, data} = useContext(GamesQueryContext)
 
@@ -14,7 +14,7 @@ const OngoingGames = () => {
 
   if (error) return <h3>{error.message}</h3>
 
-  if (games?.length === 0) return <h2>NO ONGOING GAMES</h2>
+  if (games?.length === 0) return <h1>NO ONGOING GAMES</h1>
 
   return(
     <>
@@ -28,7 +28,7 @@ const OngoingGames = () => {
   )
 }
 
-export default OngoingGames
+export default OngoingGamesList
 
 
 const OngoingGame = ({game}: {game: Game}) => {

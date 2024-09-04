@@ -1,9 +1,9 @@
 'use client'
 
-import GamesView from "@games/gamesView";
 import GamesQueryContext from "@games/GamesQueryContext";
 import {useQuery} from "@apollo/client";
 import {gql} from "@/__generated__";
+import {Children} from "@app/types";
 
 const GET_GAMES = gql(/* GRAPHQL */ `
   query GetGames {
@@ -16,7 +16,7 @@ const GET_GAMES = gql(/* GRAPHQL */ `
   }
 `)
 
-const GamesController = () => {
+const GamesController = ({children}: Children) => {
   // current games list refresh rate in milliseconds
   const refresh_rate_ms: number = 5000
 
@@ -27,7 +27,7 @@ const GamesController = () => {
 
   return(
     <GamesQueryContext.Provider value={{loading, error, data}}>
-      <GamesView />
+      {children}
     </GamesQueryContext.Provider>
   )
 }

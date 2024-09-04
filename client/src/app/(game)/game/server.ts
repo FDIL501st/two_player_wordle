@@ -1,4 +1,7 @@
-import { NewGameResponse} from "@games/types";
+'use server'
+
+import 'server-only'
+import {NewGameResponse} from "@(game)/types";
 import {MATCHMAKING_PORT} from "@app/constants";
 
 

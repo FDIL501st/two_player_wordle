@@ -1,5 +1,5 @@
 import { createContext } from 'react';
-import {QueryResult} from "@games/types";
+import {QueryResult} from "@(game)/types";
 
 
 const initialResult: QueryResult = {

@@ -1,9 +1,7 @@
 'use server'
 
 import {Game} from "@(debug)/new_game/types";
-
-// need to get this value from an env variable
-const MATCHMAKING_PORT = 10001
+import {MATCHMAKING_PORT} from "@app/constants";
 
 // define this const string outside the function as to keep this var alive at all times
 // thus only need to construct once
@@ -24,7 +22,7 @@ async function create_newGame(): Promise<Game> {
         game_id: obj.game_id,
         player_type: obj.player_type
     }
-    // can only pass along js plain objects (not classes) from server to client components
+    // can only pass along js plain objects (not classes) from server to client Components
 }
 
 export {

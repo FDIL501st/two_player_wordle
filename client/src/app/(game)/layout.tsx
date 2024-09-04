@@ -1,11 +1,14 @@
 import {Children} from "@app/types";
 import ApolloClientProvider from "@app/ApolloClientProvider";
+import GameSessionProvider from "@(game)/GameSessionProvider";
 
 
 function GameLayout({children}: Children) {
   return (
     <ApolloClientProvider>
-      {children}
+      <GameSessionProvider>
+        {children}
+      </GameSessionProvider>
     </ApolloClientProvider>
   );
 }

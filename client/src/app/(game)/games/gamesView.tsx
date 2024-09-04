@@ -1,6 +1,6 @@
-import Separator from "@games/components/Separator";
-import OngoingGames from "@games/components/OngoingGames";
-import NewGameButton from "@games/components/NewGameButton";
+import Separator from "@games/Components/Separator";
+import OngoingGamesList from "@games/Components/OngoingGamesList";
+import NewGameButton from "@games/Components/NewGameButton";
 
 
 const GamesView = () => {
@@ -8,7 +8,7 @@ const GamesView = () => {
     <div>
       <NewGameButton />
       <Separator />
-      <OngoingGames />
+      <OngoingGamesList />
     </div>
   )
 }
