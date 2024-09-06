@@ -1,9 +1,10 @@
 import GameController from "@game/gameController";
+import GameView from "@game/GameView";
 
 export default function GamePage() {
   return(
     <GameController>
-      <h1>PLACEHOLDER</h1>
+      <GameView />
     </GameController>
   )
 }

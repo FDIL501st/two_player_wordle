@@ -13,7 +13,7 @@ export async function new_game(): Promise<NewGameResponse> {
 
   const url: string = `http://localhost:${MATCHMAKING_PORT}/join_game`
 
-  // don't want to cache, want a new game every time from every different client
+  // don't want to cache, want a new game every time this function is called
   let response = await fetch(url, {cache: 'no-store'})
 
   if (!response.ok) {
@@ -27,4 +27,13 @@ export async function new_game(): Promise<NewGameResponse> {
     game_id: obj.game_id,
     player_type: obj.player_type
   }
+}
+
+/**
+ * Requests from the matchmaking server to cancel the request to find a new game to join.
+ */
+export async function cancel_new_game(): Promise<boolean> {
+  const url: string = `http://localhost:${MATCHMAKING_PORT}/cancel`
+  await fetch(url, {cache: 'no-store'})
+  return true
 }

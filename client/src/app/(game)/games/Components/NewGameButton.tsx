@@ -1,9 +1,8 @@
-import {CLIENT_PORT} from "@app/constants";
 import Link from "next/link";
 
 const NewGameButton = () => {
   return(
-    <Link href={`/game`}>
+    <Link href={`/joining`}>
       New Game
     </Link>
   )

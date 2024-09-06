@@ -3,7 +3,7 @@
 import 'client-only'
 import {Children} from "@app/types";
 import {createContext, useContext, useReducer} from "react";
-import {GameSession} from "@(game)/types";
+import {GameSession, NewGameResponse} from "@(game)/types";
 
 type State = GameSession | null
 
@@ -92,4 +92,30 @@ export function useGameSessionDispatch(): dispatchFunc {
   if (!dispatch) throw new Error("Expected dispatch function to not be null.")
 
   return dispatch
+}
+
+/**
+ * Sets the gameSession context variable given the response from new_game from server.
+ * @param dispatch the dispatch function from useGameSessionDispatch()
+ * @param newGame the result from matchamaking/new_game
+ */
+export function setGameSession(dispatch: dispatchFunc, newGame: NewGameResponse) {
+  dispatch({
+    type: ActionType.SET,
+    newGameSession: {
+      game_id: newGame.game_id,
+      client_type: newGame.player_type
+    }
+  })
+}
+
+/**
+ * Clears the gameSession,
+ * @param dispatch the dispatch function from useGameSessionDispatch()
+ */
+export function clearGameSession(dispatch: dispatchFunc) {
+  dispatch({
+    type: ActionType.CLEAR,
+    newGameSession: null
+  })
 }

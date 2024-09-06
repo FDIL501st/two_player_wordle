@@ -23,6 +23,7 @@
       "@(debug)/*": ["./src/app/(debug)/*"],
       "@(game)/*": ["./src/app/(game)/*"],
       "@games/*": ["./src/app/(game)/games/*"],
+      "@joining/*": ["./src/app/(game)/joining/*"],
       "@game/*": ["./src/app/(game)/game/*"]
     }
   },
