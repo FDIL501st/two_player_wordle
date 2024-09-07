@@ -1,8 +1,8 @@
 'use client'
 
-import {Game} from "@(game)/types";
+import {Game} from "@/(game)/types";
 import {useContext} from "react";
-import GamesQueryContext from "@games/GamesQueryContext";
+import GamesQueryContext from "@/games/GamesQueryContext";
 
 const OngoingGamesList = () => {
 

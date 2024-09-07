@@ -1,8 +1,8 @@
 'use client'
 
-import {GameSession} from "@(game)/types";
-import {useGameSession} from "@(game)/GameSessionProvider";
-import QuitButton from "@game/Components/QuitButton";
+import {GameSession} from "@/(game)/types";
+import {useGameSession} from "@/(game)/GameSessionProvider";
+import QuitButton from "@/game/Components/QuitButton";
 
 const Game = () => {
   const gameSession: GameSession | null = useGameSession()

@@ -1,6 +1,6 @@
 'use client'
 
-import {clearGameSession, useGameSessionDispatch} from "@(game)/GameSessionProvider";
+import {clearGameSession, useGameSessionDispatch} from "@/(game)/GameSessionProvider";
 import {useRouter} from "next/navigation";
 
 const QuitButton = () => {

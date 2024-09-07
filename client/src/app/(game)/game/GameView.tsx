@@ -1,4 +1,4 @@
-import Game from "@game/Components/Game";
+import Game from "@/game/Components/Game";
 
 const GameView = () => {
   return (

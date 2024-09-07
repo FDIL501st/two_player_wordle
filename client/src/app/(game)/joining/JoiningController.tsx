@@ -1,10 +1,10 @@
 'use client'
 
-import {Children} from "@app/types";
-import {setGameSession, useGameSession, useGameSessionDispatch} from "@(game)/GameSessionProvider";
+import {Children} from "@/app/types";
+import {setGameSession, useGameSession, useGameSessionDispatch} from "@/(game)/GameSessionProvider";
 import {useRouter} from "next/navigation";
 import {useEffect} from "react";
-import {new_game} from "@joining/server";
+import {new_game} from "@/joining/server";
 
 const JoiningController = ({children}: Children) => {
   const gameSession = useGameSession()

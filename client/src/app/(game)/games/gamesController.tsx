@@ -1,9 +1,9 @@
 'use client'
 
-import GamesQueryContext from "@games/GamesQueryContext";
+import GamesQueryContext from "@/games/GamesQueryContext";
 import {useQuery} from "@apollo/client";
 import {gql} from "@/__generated__";
-import {Children} from "@app/types";
+import {Children} from "@/app/types";
 
 const GET_GAMES = gql(/* GRAPHQL */ `
   query GetGames {

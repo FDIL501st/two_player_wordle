@@ -18,13 +18,13 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@app/*": ["./src/app/*"],
-      "@(debug)/*": ["./src/app/(debug)/*"],
-      "@(game)/*": ["./src/app/(game)/*"],
-      "@games/*": ["./src/app/(game)/games/*"],
-      "@joining/*": ["./src/app/(game)/joining/*"],
-      "@game/*": ["./src/app/(game)/game/*"]
+      "@/app/*": ["./src/app/*"],
+      "@/(debug)/*": ["./src/app/(debug)/*"],
+      "@/(game)/*": ["./src/app/(game)/*"],
+      "@/games/*": ["./src/app/(game)/games/*"],
+      "@/joining/*": ["./src/app/(game)/joining/*"],
+      "@/game/*": ["./src/app/(game)/game/*"],
+      "@/*": ["./src/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

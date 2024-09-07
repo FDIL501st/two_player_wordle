@@ -1,7 +1,7 @@
 'use server'
 
-import {Game} from "@(debug)/new_game/types";
-import {MATCHMAKING_PORT} from "@app/constants";
+import {Game} from "@/(debug)/new_game/types";
+import {MATCHMAKING_PORT} from "@/app/constants";
 
 // define this const string outside the function as to keep this var alive at all times
 // thus only need to construct once

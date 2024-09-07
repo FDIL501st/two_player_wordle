@@ -1,9 +1,9 @@
 'use client'
 
 import 'client-only'
-import {Children} from "@app/types";
+import {Children} from "@/app/types";
 import {createContext, useContext, useReducer} from "react";
-import {GameSession, NewGameResponse} from "@(game)/types";
+import {GameSession, NewGameResponse} from "@/(game)/types";
 
 type State = GameSession | null
 

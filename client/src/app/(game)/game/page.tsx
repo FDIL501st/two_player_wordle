@@ -1,5 +1,5 @@
-import GameController from "@game/gameController";
-import GameView from "@game/GameView";
+import GameController from "@/game/gameController";
+import GameView from "@/game/GameView";
 
 export default function GamePage() {
   return(

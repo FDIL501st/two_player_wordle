@@ -1,8 +1,8 @@
 'use server'
 
 import 'server-only'
-import {NewGameResponse} from "@(game)/types";
-import {MATCHMAKING_PORT} from "@app/constants";
+import {NewGameResponse} from "@/(game)/types";
+import {MATCHMAKING_PORT} from "@/app/constants";
 
 
 /** Connects the client to a new game.
@@ -14,11 +14,15 @@ export async function new_game(): Promise<NewGameResponse> {
   const url: string = `http://localhost:${MATCHMAKING_PORT}/join_game`
 
   // don't want to cache, want a new game every time this function is called
-  let response = await fetch(url, {cache: 'no-store'})
+  let response: Response;
+
+  response = await fetch(url, {cache: 'no-store'})
+  // throws error here upon, which client doesn't handle.
+  // Simply gets printed in console
 
   if (!response.ok) {
     // got an error response
-    throw new Error("Had an error occur getting a response from the matchmaking server.")
+    throw new Error("Had an error occur when getting a response from the matchmaking server.")
   }
 
   let obj: NewGameResponse = await response.json()

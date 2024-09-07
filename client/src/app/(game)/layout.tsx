@@ -1,6 +1,6 @@
-import {Children} from "@app/types";
-import ApolloClientProvider from "@app/ApolloClientProvider";
-import GameSessionProvider from "@(game)/GameSessionProvider";
+import {Children} from "@/app/types";
+import ApolloClientProvider from "@/app/ApolloClientProvider";
+import GameSessionProvider from "@/(game)/GameSessionProvider";
 
 
 function GameLayout({children}: Children) {

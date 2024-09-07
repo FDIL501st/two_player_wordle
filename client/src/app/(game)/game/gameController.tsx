@@ -1,8 +1,8 @@
 'use client'
 
-import {Children} from "@app/types";
-import {useGameSession} from "@(game)/GameSessionProvider";
-import {GameSession} from "@(game)/types";
+import {Children} from "@/app/types";
+import {useGameSession} from "@/(game)/GameSessionProvider";
+import {GameSession} from "@/(game)/types";
 import {useRouter} from "next/navigation";
 import {useEffect} from "react";
 

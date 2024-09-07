@@ -2,7 +2,7 @@
 
 import { ApolloProvider } from '@apollo/client';
 import React from "react";
-import client from "@app/apollo-client";
+import client from "@/app/apollo-client";
 
 
 type Children = Readonly<{ children: React.ReactNode }>
