@@ -5,7 +5,7 @@ import NewGameButton from "@/games/Components/NewGameButton";
 
 const GamesView = () => {
   return(
-    <div>
+    <div className={"space-y-4"}>
       <NewGameButton />
       <Separator />
       <OngoingGamesList />

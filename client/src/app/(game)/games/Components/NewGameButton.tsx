@@ -2,7 +2,7 @@ import Link from "next/link";
 
 const NewGameButton = () => {
   return(
-    <Link href={`/joining`}>
+    <Link className={"btn btn-blue"} href={`/joining`}>
       New Game
     </Link>
   )

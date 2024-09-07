@@ -1,8 +1,10 @@
 'use client'
 
-import {Game} from "@/(game)/types";
+import {Client, Game} from "@/(game)/types";
 import {useContext} from "react";
 import GamesQueryContext from "@/games/GamesQueryContext";
+import {useRouter} from "next/navigation";
+import {ActionType, useGameSessionDispatch} from "@/(game)/GameSessionProvider";
 
 const OngoingGamesList = () => {
 
@@ -19,9 +21,13 @@ const OngoingGamesList = () => {
   return(
     <>
       {games?.map((game) => (
-        <div key={game.id}>
-          <OngoingGame game={game} />
-          <hr/>
+        <div className={"flex flex-row border-b-2"} key={game.id}>
+          <div className={"basis-3/4"}>
+            <OngoingGame game={game} />
+          </div>
+          <div className={""}>
+            <SpectateButton gameID={game.id}/>
+          </div>
         </div>
       ))}
     </>
@@ -43,5 +49,28 @@ const OngoingGame = ({game}: {game: Game}) => {
       Player 2 Points: {game.p2Points}
       <br/>
     </>
+  )
+}
+
+const SpectateButton = ({gameID}: {gameID: string}) => {
+  const router = useRouter()
+  const dispatch = useGameSessionDispatch()
+
+  function handleSpectate() {
+    dispatch({
+      type: ActionType.SET,
+      newGameSession: {
+        game_id: gameID,
+        client_type: Client.Spectator
+      }
+    })
+
+    router.push('/joining')
+  }
+
+  return(
+    <button className={"btn btn-blue"} onClick={handleSpectate}>
+      Spectate
+    </button>
   )
 }
