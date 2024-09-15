@@ -145,11 +145,19 @@ export type GetAllGamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetAllGamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Game', id: string }> };
 
+export type Get_GameQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+
+export type Get_GameQueryResult = { __typename?: 'Game', id: string, p1Points: number, p2Points: number, roundNum: number, currentRound: { __typename?: 'Round', letterpoolState: number, currentPlayer: Player, guessNum: number, turns: Array<{ __typename?: 'Turn', guessedWord: string, letterState: number }> } }
+export type Get_GameQuery = { __typename?: 'Query', game: Get_GameQueryResult};
+
 export type GetGamesQueryVariables = Exact<{ [key: string]: never; }>;
 
-export type GetGamesQueryResult = { __typename?: 'Game', id: string, p1Points: number, p2Points: number, roundNum: number }
+export type  GetGamesQueryResult = { __typename?: 'Game', id: string, p1Points: number, p2Points: number, roundNum: number }
 export type GetGamesQuery = { __typename?: 'Query', games: Array<GetGamesQueryResult> };
 
 
 export const GetAllGamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllGames"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<GetAllGamesQuery, GetAllGamesQueryVariables>;
+export const Get_GameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GET_GAME"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"p1Points"}},{"kind":"Field","name":{"kind":"Name","value":"p2Points"}},{"kind":"Field","name":{"kind":"Name","value":"roundNum"}},{"kind":"Field","name":{"kind":"Name","value":"currentRound"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"letterpoolState"}},{"kind":"Field","name":{"kind":"Name","value":"currentPlayer"}},{"kind":"Field","name":{"kind":"Name","value":"guessNum"}},{"kind":"Field","name":{"kind":"Name","value":"turns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"guessedWord"}},{"kind":"Field","name":{"kind":"Name","value":"letterState"}}]}}]}}]}}]}}]} as unknown as DocumentNode<Get_GameQuery, Get_GameQueryVariables>;
 export const GetGamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGames"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"p1Points"}},{"kind":"Field","name":{"kind":"Name","value":"p2Points"}},{"kind":"Field","name":{"kind":"Name","value":"roundNum"}}]}}]}}]} as unknown as DocumentNode<GetGamesQuery, GetGamesQueryVariables>;

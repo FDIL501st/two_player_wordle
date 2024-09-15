@@ -22,11 +22,11 @@ export type dispatchFunc = (value: Action) => void
 /**
  * The context/state of the gameSession. Can be null.
  */
-export const GameSessionContext = createContext<State>(null)
+const GameSessionContext = createContext<State>(null)
 /**
  * The context/state of the dispatch function to update the gameSession context.
  */
-export const GameSessionDispatchContext = createContext<dispatchFunc | null>(null)
+const GameSessionDispatchContext = createContext<dispatchFunc | null>(null)
 
 /**
  * The gameSessionContext setter.

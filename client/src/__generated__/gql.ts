@@ -14,6 +14,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  */
 const documents = {
     "\n  query GetAllGames {\n    games {\n      id\n    }\n  }\n": types.GetAllGamesDocument,
+    "\nquery GET_GAME($id: String!) {\n  game(id: $id) {\n    id\n    p1Points\n    p2Points\n    roundNum\n    currentRound {\n      letterpoolState\n      currentPlayer\n      guessNum\n      turns {\n        guessedWord\n        letterState\n      }\n    }\n  }\n}\n": types.Get_GameDocument,
     "\n  query GetGames {\n    games {\n      id,\n      p1Points,\n      p2Points,\n      roundNum\n    }\n  }\n": types.GetGamesDocument,
 };
 
@@ -35,6 +36,10 @@ export function gql(source: string): unknown;
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
 export function gql(source: "\n  query GetAllGames {\n    games {\n      id\n    }\n  }\n"): (typeof documents)["\n  query GetAllGames {\n    games {\n      id\n    }\n  }\n"];
+/**
+ * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
+ */
+export function gql(source: "\nquery GET_GAME($id: String!) {\n  game(id: $id) {\n    id\n    p1Points\n    p2Points\n    roundNum\n    currentRound {\n      letterpoolState\n      currentPlayer\n      guessNum\n      turns {\n        guessedWord\n        letterState\n      }\n    }\n  }\n}\n"): (typeof documents)["\nquery GET_GAME($id: String!) {\n  game(id: $id) {\n    id\n    p1Points\n    p2Points\n    roundNum\n    currentRound {\n      letterpoolState\n      currentPlayer\n      guessNum\n      turns {\n        guessedWord\n        letterState\n      }\n    }\n  }\n}\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

@@ -17,6 +17,7 @@ const GameController = ({children}: Children) => {
     }
   }, [gameSession, router]);
 
+  // render nothing if gameSession is not set
   if (!gameSession) return <></>
 
   return(
