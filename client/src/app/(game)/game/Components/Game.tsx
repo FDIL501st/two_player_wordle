@@ -5,9 +5,9 @@ import {useGameSession} from "@/(game)/GameSessionProvider";
 import QuitButton from "@/game/Components/QuitButton";
 import {gql} from "@/__generated__";
 import {KeyboardEvent} from "react";
-import {guessDispatchFn, useGuess, useGuessDispatch} from "@/game/Contexts/GuessProvider";
-import {addLetter, removeLetter} from "@/game/Contexts/guessDispatch";
 import GuessGrid from "@/game/Components/GuessGrid";
+import {useAppDispatch, useAppSelector} from "@/lib/hooks";
+import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
 
 const GET_GAME = gql(/* GRAPHQL */`
 query GET_GAME($id: String!) {
@@ -33,8 +33,8 @@ const Game = () => {
   const gameSession: GameSession | null = useGameSession()
   // GameController makes sure gameSession is not null when this component is used
 
-  const guessDispatch: guessDispatchFn = useGuessDispatch()
-  const guess: string = useGuess()
+  const dispatch = useAppDispatch()
+  const guess = useAppSelector(selectGuess)
 
   // the size of word being guessed, can be determined by size of
   const wordSize: number = 5
@@ -43,13 +43,17 @@ const Game = () => {
     console.log(`KeyDown: ${keyPressed}`)
     console.log(`Guess: ${guess}`)
     if (keyPressed === 'Backspace') {
-      removeLetter(guessDispatch)
+      dispatch(backspace())
       return
     }
 
     const lowercaseLetter = /^[a-z]$/;
     if (lowercaseLetter.test(keyPressed)) {
-      addLetter(guessDispatch, keyPressed, wordSize)
+      const addAction: AddAction = {
+        letter: keyPressed,
+        maxWordSize: wordSize
+      }
+      dispatch(add(addAction))
       return
     }
 

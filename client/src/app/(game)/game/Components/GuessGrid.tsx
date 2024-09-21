@@ -1,7 +1,8 @@
 'use client'
 
 import {useEffect, useState} from "react";
-import {useGuess} from "@/game/Contexts/GuessProvider";
+import {useAppSelector} from "@/lib/hooks";
+import {selectGuess} from "@/lib/features/guess/guessSlice";
 
 const GuessGrid = () => {
   const [currentRow, setCurrentRow] = useState<number>(0)
@@ -14,7 +15,7 @@ const GuessGrid = () => {
   const wordSize: number = 5
 
   // the guess
-  const guess = useGuess()
+  const guess: string = useAppSelector(selectGuess)
 
   return (
     <div>
