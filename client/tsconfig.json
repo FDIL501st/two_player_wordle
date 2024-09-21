@@ -24,6 +24,7 @@
       "@/games/*": ["./src/app/(game)/games/*"],
       "@/joining/*": ["./src/app/(game)/joining/*"],
       "@/game/*": ["./src/app/(game)/game/*"],
+      "@/lib/*": ["./src/lib/*"],
       "@/*": ["./src/*"]
     }
   },
