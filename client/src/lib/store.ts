@@ -1,12 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import counterReducer from "@/lib/features/counter/counterSlice"
 import guessReducer from "@/lib/features/guess/guessSlice"
-
+import gameSessionReducer from "@/lib/features/gameSession/gameSessionSlice"
 export const makeStore = () => {
   return configureStore({
     reducer: {
       counter: counterReducer,
-      guess: guessReducer
+      guess: guessReducer,
+      gameSession: gameSessionReducer
     }
   })
 }
