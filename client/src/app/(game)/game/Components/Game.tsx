@@ -1,13 +1,12 @@
 'use client'
 
-import {GameSession} from "@/(game)/types";
-import {useGameSession} from "@/(game)/GameSessionProvider";
 import QuitButton from "@/game/Components/QuitButton";
 import {gql} from "@/__generated__";
 import {KeyboardEvent} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
 import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
+import {selectClientType, selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
 
 const GET_GAME = gql(/* GRAPHQL */`
 query GET_GAME($id: String!) {
@@ -30,8 +29,11 @@ query GET_GAME($id: String!) {
 `)
 
 const Game = () => {
-  const gameSession: GameSession | null = useGameSession()
-  // GameController makes sure gameSession is not null when this component is used
+  const gameID = useAppSelector(selectGameID)
+  // GameController makes sure gameID is not undefined when this component is used
+
+  const client_type = useAppSelector(selectClientType)
+
 
   const dispatch = useAppDispatch()
   const guess = useAppSelector(selectGuess)
@@ -62,9 +64,9 @@ const Game = () => {
 
   return (
     <div tabIndex={0} onKeyDown={handleKeyDown}>
-      Game ID: {gameSession?.game_id}
+      Game ID: {gameID}
       <br/>
-      Client Type: {gameSession?.client_type}
+      Client Type: {client_type}
       <hr/>
 
       <h1>{guess}</h1>

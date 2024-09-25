@@ -1,5 +1,6 @@
 'use client'
 
+import styles from './counter.module.css'
 import React, { useState } from 'react'
 import {
   decrement,
@@ -7,7 +8,6 @@ import {
   incrementByAmount, incrementIfOdd,
   selectCount
 } from '@/lib/features/counter/counterSlice'
-import styles from './Counter.css'
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
 
 const Counter = () => {

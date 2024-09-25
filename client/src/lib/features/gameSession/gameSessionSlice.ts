@@ -22,25 +22,27 @@ export const gameSessionSlice = createSlice({
   name: 'guessSession',
   initialState: initialGameSession,
   reducers: {
-    clear: _ => {
+    reset: _ => {
       return initialGameSession
     },
     set: (state, action: PayloadAction<GameSession>) => {
       const game_id = action.payload.game_id
       state.value = {
         game_id,
-        client_type: game_id ? action.payload.game_id : Client.Spectator
+        client_type: game_id ? action.payload.client_type : Client.Spectator
       }
+      // if no game_id given, ignore the client_type and set it to Spectator,
+      // which is a view only client type
     }
   }
 })
 
 export const {
-  clear,
+  reset,
   set
 } = gameSessionSlice.actions
 
 export const selectGameID = (state: RootState) => <gameID | undefined>state.gameSession.value.game_id
-export const selectGameClient = (state: RootState) => <Client>state.gameSession.value.client_type
+export const selectClientType = (state: RootState) => <Client>state.gameSession.value.client_type
 
 export default gameSessionSlice.reducer

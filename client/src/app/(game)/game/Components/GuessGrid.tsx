@@ -53,7 +53,7 @@ const GuessRow = ({isActive, wordSize, guess}: GuessRowProps) => {
     // update word everytime guess is updated
     setWord(guess)
 
-  }, [isActive]);
+  }, [isActive, guess]);
 
   const letterNumbers: number[] = Array.from({ length: wordSize }, (_, i) => i)
 
@@ -64,7 +64,9 @@ const GuessRow = ({isActive, wordSize, guess}: GuessRowProps) => {
         const letter: string = letterNumber < word.length ? word[letterNumber] : ""
 
         return (
-          <GuessBox letter={letter} />
+          <div key={letterNumber}>
+            <GuessBox letter={letter} />
+          </div>
         )
       })}
     </div>

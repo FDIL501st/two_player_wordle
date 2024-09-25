@@ -1,40 +1,44 @@
 'use client'
 
 import {Children} from "@/app/types";
-import {setGameSession, useGameSession, useGameSessionDispatch} from "@/(game)/GameSessionProvider";
 import {useRouter} from "next/navigation";
 import {useEffect} from "react";
 import {new_game} from "@/joining/server";
+import {useAppDispatch, useAppSelector} from "@/lib/hooks";
+import {selectGameID, set} from "@/lib/features/gameSession/gameSessionSlice";
 
 const JoiningController = ({children}: Children) => {
-  const gameSession = useGameSession()
-  const dispatch = useGameSessionDispatch()
+  const dispatch = useAppDispatch()
+  const gameID = useAppSelector(selectGameID)
   const router = useRouter()
 
   useEffect(() => {
-    // if gameSession is set, redirect to /game
-    if (gameSession) {
+    // if gameID is set, redirect to /game
+    if (gameID) {
       router.replace('/game')
     }
-  }, [gameSession, router]);
+  }, [gameID, router]);
 
 
   // join a new game
   useEffect(() => {
     // do nothing if gameSession already set
-    if (gameSession) return
+    if (gameID) return
 
     async function joinGame() {
       const newGame = await new_game()
-      setGameSession(dispatch, newGame)
+      dispatch(set({
+        game_id: newGame.game_id,
+        client_type: newGame.player_type
+      }))
     }
 
     // noinspection JSIgnoredPromiseFromCall
     joinGame()
 
-  }, [gameSession, dispatch]);
+  }, [gameID, dispatch]);
 
-  if (gameSession) return <></>
+  if (gameID) return <></>
 
   return (
     <>

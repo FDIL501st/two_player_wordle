@@ -11,11 +11,9 @@ export default function StoreProvider({children}: Children) {
     // Create the store instance the first time this renders
     storeRef.current = makeStore()
   }
-
-  // other times, simply pass along the same store instance created before
-
   // this is essentially singleton pattern
 
+  // noinspection TypeScriptValidateTypes
   return (
     <Provider store={storeRef.current}>
       {children}

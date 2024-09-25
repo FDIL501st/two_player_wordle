@@ -4,7 +4,8 @@ import {Client, Game} from "@/(game)/types";
 import {useContext} from "react";
 import GamesQueryContext from "@/games/GamesQueryContext";
 import {useRouter} from "next/navigation";
-import {ActionType, useGameSessionDispatch} from "@/(game)/GameSessionProvider";
+import {set} from "@/lib/features/gameSession/gameSessionSlice"
+import {useAppDispatch} from "@/lib/hooks";
 
 const OngoingGamesList = () => {
 
@@ -54,16 +55,12 @@ const OngoingGame = ({game}: {game: Game}) => {
 
 const SpectateButton = ({gameID}: {gameID: string}) => {
   const router = useRouter()
-  const dispatch = useGameSessionDispatch()
-
+  const dispatch = useAppDispatch()
   function handleSpectate() {
-    dispatch({
-      type: ActionType.SET,
-      newGameSession: {
-        game_id: gameID,
-        client_type: Client.Spectator
-      }
-    })
+    dispatch(set({
+      game_id: gameID,
+      client_type: Client.Spectator
+    }))
 
     router.push('/joining')
   }

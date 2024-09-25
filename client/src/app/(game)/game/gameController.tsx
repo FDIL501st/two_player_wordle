@@ -1,24 +1,24 @@
 'use client'
 
 import {Children} from "@/app/types";
-import {useGameSession} from "@/(game)/GameSessionProvider";
-import {GameSession} from "@/(game)/types";
 import {useRouter} from "next/navigation";
 import {useEffect} from "react";
+import {useAppSelector} from "@/lib/hooks";
+import {selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
 
 const GameController = ({children}: Children) => {
   const router = useRouter()
-  const gameSession: GameSession | null = useGameSession()
+  const gameID = useAppSelector(selectGameID)
 
   useEffect(() => {
-    // should only really reach this page if gameSession is not null
-    if (!gameSession) {
+    // should only really reach this page if gameID is not null
+    if (!gameID) {
       router.replace("/games")
     }
-  }, [gameSession, router]);
+  }, [gameID, router]);
 
   // render nothing if gameSession is not set
-  if (!gameSession) return <></>
+  if (!gameID) return <></>
 
   return(
     <>
