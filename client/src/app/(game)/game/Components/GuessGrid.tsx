@@ -18,9 +18,9 @@ const GuessGrid = () => {
   const guess: string = useAppSelector(selectGuess)
 
   return (
-    <div>
+    <div className={"p-1"}>
       {rowNumbers.map((rowNumber) => (
-        <div key={rowNumber}>
+        <div key={rowNumber} className={"my-4"}>
           <GuessRow isActive={currentRow === rowNumber} wordSize={wordSize} guess={guess} />
         </div>
       ))}
@@ -29,6 +29,13 @@ const GuessGrid = () => {
 };
 
 export default GuessGrid
+
+enum BoxColours {
+  WHITE = "bg-white",
+  GRAY = "bg-grey-400",
+  GREEN = "bg-green-500",
+  YELLOW = "bg-amber-300"
+}
 
 /**
  * Notes:
@@ -57,14 +64,26 @@ const GuessRow = ({isActive, wordSize, guess}: GuessRowProps) => {
 
   const letterNumbers: number[] = Array.from({ length: wordSize }, (_, i) => i)
 
+  // need to update box colour somehow before updating currentRow/changing rows
+  const initialBoxColours: BoxColours[] = Array.from({ length: wordSize }, () => BoxColours.WHITE)
+  const [colour, setColour] = useState<Array<BoxColours>>(initialBoxColours)
+
   return (
-    <div>
+    <div className={`grid grid-flow-col auto-cols-auto gap-1 justify-center`}>
       {letterNumbers.map((letterNumber) => {
         // display no text for boxes without a letter yet
         const letter: string = letterNumber < word.length ? word[letterNumber] : ""
 
         return (
-          <div key={letterNumber}>
+          <div key={letterNumber}
+               className={`aspect-square w-[25px] sm:w-[50px] md:w-[100px] lg:w-[150px]
+               border rounded border-black ${colour[letterNumber].valueOf()}
+               text-black text-center place-content-center 
+               text-base sm:text-xl md:text-3xl lg:text-4xl
+               before:content-[''] before:inline before:h-full before:w-full`}>
+            {/* issue when I try to use percentage for width is auto width becomes essentially 0,
+            thus our box becomes 0x0. Need a given size, that isn't relative.
+             */}
             <GuessBox letter={letter} />
           </div>
         )
@@ -74,10 +93,9 @@ const GuessRow = ({isActive, wordSize, guess}: GuessRowProps) => {
 }
 
 const GuessBox = ({letter}: {letter: string}) => {
-  // need to update box colour somehow before updating currentRow
   return(
-    <div>
+    <>
       {letter}
-    </div>
+    </>
   )
 }

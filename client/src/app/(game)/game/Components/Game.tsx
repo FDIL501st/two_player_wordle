@@ -5,8 +5,9 @@ import {gql} from "@/__generated__";
 import {KeyboardEvent} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
-import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
+import {add, AddAction, backspace} from "@/lib/features/guess/guessSlice";
 import {selectClientType, selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
+import {Client} from "@/(game)/types";
 
 const GET_GAME = gql(/* GRAPHQL */`
 query GET_GAME($id: String!) {
@@ -29,21 +30,22 @@ query GET_GAME($id: String!) {
 `)
 
 const Game = () => {
-  const gameID = useAppSelector(selectGameID)
   // GameController makes sure gameID is not undefined when this component is used
+  const gameID = useAppSelector(selectGameID)
 
   const client_type = useAppSelector(selectClientType)
-
-
   const dispatch = useAppDispatch()
-  const guess = useAppSelector(selectGuess)
 
-  // the size of word being guessed, can be determined by size of
+  // the size of word being guessed,
+  // can be determined by size of word to guess (another server that figures this out)
   const wordSize: number = 5
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    // Spectators are view only, can't affect page
+    // if (client_type === Client.Spectator) return
+
     const keyPressed: string = e.key
     console.log(`KeyDown: ${keyPressed}`)
-    console.log(`Guess: ${guess}`)
+    
     if (keyPressed === 'Backspace') {
       dispatch(backspace())
       return
@@ -68,13 +70,12 @@ const Game = () => {
       <br/>
       Client Type: {client_type}
       <hr/>
-
-      <h1>{guess}</h1>
-
-      <hr/>
       <QuitButton />
       <hr/>
-      <GuessGrid />
+      <div className={"m-4 bg-blue-100"}>
+        <GuessGrid />
+      </div>
+
     </div>
   );
 };
