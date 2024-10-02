@@ -70,25 +70,6 @@ services:
       start_period: 30s
       timeout: 10s
 
-  mongo-express:
-    container_name: mongodb-admin-ui
-    image: mongo-express
-    restart: always
-    ports:
-      - 8081:8081
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
-      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
-      ME_CONFIG_MONGODB_URL: ${MONGO_CONNECTION_URL}
-      ME_CONFIG_BASICAUTH: false
-    # this should only run once mongodb container is healthy
-    depends_on:
-      mongo-db:
-        condition: service_healthy
-        restart: true
-
-  # mongo-express able to connect to mongo-db
-  # however graphql_server was not responding on web
 
 volumes:
   mongo_volume:
