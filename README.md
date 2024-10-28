@@ -14,3 +14,8 @@ You will need a .env file in the parent directory as [compose.yaml](compose.yaml
 **MONGO_CONTAINER_NAME** also doesn't matter as it simply affects the container name of the docker container that is run.
 
 **GRAPHQL_PORT** is the port number that the graphql server will run on. You should choose a port that isn't already in use.
+
+
+## Running without docker compose
+
+This is not recommended as it is much more difficult to get the app setup and working due to environment variables needing to be passed along.

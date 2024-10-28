@@ -14,7 +14,7 @@ services:
       context: ./graphql_server
       target: final
     ports:
-      - ${GRAPHQL_PORT}:${GRAPHQL_PORT}
+      - 10000:${GRAPHQL_PORT}
     # to connect to local mongo, can't be host network mode as mongo container not available via localhost
     environment:
       - ROCKET_DATABASES={mongodb={url=${MONGO_CONNECTION_URL}}}
@@ -31,10 +31,27 @@ services:
     build:
       context: ./matchmaking
       target: final
-    network_mode: host
+    ports:
+      - ${MATCHMAKING_PORT}:${MATCHMAKING_PORT}
     environment:
       - ROCKET_PORT=${MATCHMAKING_PORT}
-  # add depends on graphql-server
+    # depends on graphql-server
+    depends_on:
+      - graphql-server
+
+  word-server:
+    container_name: word_server
+    build:
+      context: ./word
+    environment:
+      - WORD_PORT=${WORD_PORT}
+    ports:
+      - ${WORD_PORT}:${WORD_PORT}
+    # depends on mongo
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+        restart: true
 
   client:
     container_name: client_server
@@ -45,12 +62,9 @@ services:
       NODE_ENV: production
     network_mode: host
     depends_on:
-      matchmaking-server:
-        condition: service_started
-        restart: true
-      graphql-server:
-        condition: service_started
-        restart: true
+      - graphql-server
+      - matchmaking-server
+      - word-server
 
   mongo-db:
     image: mongo
