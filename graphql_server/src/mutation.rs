@@ -23,10 +23,13 @@ impl Mutation {
     ///
     /// This function will return an error if failed to create a new game.
     /// Most likely cause is being unable to connect to the database.
-    async fn new_game(context: &MongoClient) -> FieldResult<String> {
+    async fn new_game(context: &MongoClient,
+                      
+                      #[graphql(default = "words")] 
+                      word: String) -> FieldResult<String> {
         let games: Collection<Game> = game_collection(context);
 
-        let mut new_game = Game::new_game("words");
+        let mut new_game = Game::new_game(word.as_str());
 
         let mut attempt: u8 = 0;
         let max_retry: u8 = 2;
@@ -54,10 +57,12 @@ impl Mutation {
     }
 
     /// Testing creation of new game by providing a id instead of letting program generate one.
-    async fn test_new_game(context: &MongoClient, id: String) -> FieldResult<String> {
+    /// Also testing default arguments.
+    async fn test_new_game(context: &MongoClient, id: String,
+                           #[graphql(default = "words")]
+                           word: String) -> FieldResult<String> {
         let games: Collection<Game> = game_collection(context);
-
-        let mut new_game = Game::new_game("words");
+        let mut new_game = Game::new_game(word.as_str());
         new_game.set_id(&id);
 
         let insert_one_result = games.insert_one(&new_game, None).await;
@@ -111,7 +116,7 @@ impl Mutation {
             )
             .into_field_error()),
 
-            // return true if delete occureed
+            // return true if delete occurred
             Ok(_) => Ok(true),
         }
     }

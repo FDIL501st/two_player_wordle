@@ -1,4 +1,4 @@
-use super::GRAPHQL_PORT;
+use super::{GRAPHQL_PORT, WORD_PORT};
 use crossbeam_channel;
 use crossbeam_channel::{Receiver, Sender};
 use rocket::serde::json::Json;
@@ -99,46 +99,74 @@ struct MutationResponse {
 /// Attempts to create a game in the graphql server. Returns the game id.
 /// If there was an error with communications with the graphql server, then this returns None.
 async fn create_game() -> Option<String> {
+    let word_future_response = get_word();
     let client = reqwest::Client::new();
 
     let url: String = format!("http://localhost:{}/graphql", *GRAPHQL_PORT);
+
+    let query: String = match word_future_response.await {
+        Some(word) => format!("mutation{{newGame(word:{word})}}"),
+        None => String::from("mutation{newGame}")
+    };
+    
     let data = MutationQuery {
-        query: "mutation{newGame}".to_string(),
+        query
     };
 
     let res = client.post(url).json(&data).send().await;
-    
-    return match res {
+    match res {
         Ok(res) => {
             match res.json::<MutationResponse>().await {
                 Ok(mutation_response) => {
                     Some(mutation_response.data.newGame)
                 }
-
                 // deserialization fail
                 Err(_) => None
             }
         }
-
         // incorrect url or graphql server didn't respond
         Err(_) => None
     }
 }
 
+async fn get_word() -> Option<String> {
+    let client = reqwest::Client::new();
+    let url: String = format!("http://localhost:{}/word/five_letter", *WORD_PORT);
+
+    let res = client.get(url).send().await;
+    match res {
+        Ok(res) => {
+            match res.text().await {
+                Ok(word) => Some(word),
+                // error in parsing
+                Err(_) => None
+            }
+        }
+        // error in getting response
+        Err(_) => None
+    }
+}
 
 #[cfg(test)]
 mod test {
     use super::*;
-    use futures::executor::block_on;
     // need block_on to use async functions in non-async methods
     // as tests can't be async functions
     
     // this test will fail if graphql server is not online
-    #[test]
-    fn get_game_id_from_create_game() {
+    #[tokio::test]
+    async fn get_game_id_from_create_game() {
 
-        let game_id = block_on(create_game());
+        let game_id = create_game().await;
 
         assert_ne!(game_id, None, "Expected create_game to provide an actual game_id.");
+    }
+
+    // test will fail if word server is not online
+    #[tokio::test]
+    async fn get_word_from_get_word() {
+        let word = get_word().await;
+
+        assert_ne!(word, None, "Expected get_word to return a word.")
     }
 }

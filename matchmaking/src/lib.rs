@@ -30,6 +30,12 @@ lazy_static! {
         .unwrap_or("3000".to_string())
         .parse()
         .expect("CLIENT_PORT should be an unsigned integer.");
+    
+    /// Port the word server is hosted on
+    pub static ref WORD_PORT: u32 = env::var("WORD_PORT")
+        .unwrap_or("10002".to_string())
+        .parse()
+        .expect("WORD_PORT should be an unsigned integer.");
 }
 
 
