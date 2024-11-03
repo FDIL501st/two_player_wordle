@@ -5,7 +5,7 @@ import {gql} from "@/__generated__";
 import {KeyboardEvent} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
-import {add, AddAction, backspace} from "@/lib/features/guess/guessSlice";
+import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
 import {selectClientType, selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
 import {Client} from "@/(game)/types";
 
@@ -17,6 +17,27 @@ query GET_GAME($id: String!) {
     p2Points
     roundNum
     currentRound {
+      targetWord
+      letterpoolState
+      currentPlayer
+      guessNum
+      turns {
+        guessedWord
+        letterState
+      }
+    }
+  }
+}
+`)
+
+const GET_ROUND = gql(/* GRAPHQL */`
+query GET_GAME($id: String!) {
+  game(id: $id) {
+    p1Points
+    p2Points
+    roundNum
+    currentRound {
+      targetWord
       letterpoolState
       currentPlayer
       guessNum
@@ -34,18 +55,27 @@ const Game = () => {
   const gameID = useAppSelector(selectGameID)
 
   const client_type = useAppSelector(selectClientType)
+  const guess: string = useAppSelector(selectGuess)
   const dispatch = useAppDispatch()
-
+  
   // the size of word being guessed,
   // can be determined by size of word to guess (another server that figures this out)
   const wordSize: number = 5
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
-    // Spectators are view only, can't affect page
+    // Only current player, can affect page
     // if (client_type === Client.Spectator) return
 
     const keyPressed: string = e.key
     console.log(`KeyDown: ${keyPressed}`)
-    
+
+    if (keyPressed === 'Enter' && guess.length === wordSize) {
+      // first check if its a valid word
+      
+      // call update to round in graphql_server
+      // and compare word to target 
+      // and change players (maybe can be done with graphql_server? )
+    }
+
     if (keyPressed === 'Backspace') {
       dispatch(backspace())
       return

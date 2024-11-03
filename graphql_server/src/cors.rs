@@ -8,13 +8,19 @@ pub(super) fn cors_options() -> rocket_cors::Cors {
     let self_origin = format!("http://localhost:{}", *GRAPHQL_PORT);
     
     // need to also add 127.0.0.1 as well
+    let client_origin2 = format!("http://127.0.0.1:{}", *CLIENT_PORT);
+	let matchmaking_origin2 = format!("http://127.0.0.1:{}", *MATCHMAKING_PORT);
+    let self_origin2 = format!("http://127.0.0.1:{}", *GRAPHQL_PORT);
 	
 	// expecting requests from client and matchmaking servers
     let allowed_origins = AllowedOrigins::some_exact(
         &[
             client_origin.as_str(),
 			matchmaking_origin.as_str(),
-            self_origin.as_str()
+            self_origin.as_str(),
+            client_origin2.as_str(),
+			matchmaking_origin2.as_str(),
+            self_origin2.as_str()
         ]);
 		
     CorsOptions {
