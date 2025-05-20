@@ -2,12 +2,15 @@
 
 import QuitButton from "@/game/Components/QuitButton";
 import {gql} from "@/__generated__";
-import {KeyboardEvent} from "react";
+import {KeyboardEvent, useEffect} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
 import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
-import {selectClientType, selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
+import {selectClientType, selectGameID, switch_player} from "@/lib/features/gameSession/gameSessionSlice";
 import {Client} from "@/(game)/types";
+import {WORD_INDEX_URL} from "@/app/constants";
+import {selectCurrentPlayer, selectTargetWord} from "@/lib/features/round/roundSlice";
+import {decode_guess_comparison, encode_guess_comparison, LetterState} from "@/app/encoding";
 
 const GET_GAME = gql(/* GRAPHQL */`
 query GET_GAME($id: String!) {
@@ -30,6 +33,7 @@ query GET_GAME($id: String!) {
 }
 `)
 
+// same as GET_GAME
 const GET_ROUND = gql(/* GRAPHQL */`
 query GET_GAME($id: String!) {
   game(id: $id) {
@@ -55,25 +59,86 @@ const Game = () => {
   const gameID = useAppSelector(selectGameID)
 
   const client_type = useAppSelector(selectClientType)
+  const current_player = useAppSelector(selectCurrentPlayer)
+  const target_word = useAppSelector(selectTargetWord)
   const guess: string = useAppSelector(selectGuess)
   const dispatch = useAppDispatch()
   
   // the size of word being guessed,
   // can be determined by size of word to guess (another server that figures this out)
   const wordSize: number = 5
+
+  useEffect(() => {
+    // update grid per turn
+
+    // wait for some sort of http request which is blocked until db updates
+    // when http GET request returns, update redux and grid and start next turn
+  })
+
+  // function to run when making a guess
+  async function make_guess(word: string) {
+	  // first check if its a valid word
+    const url_path: string = `/check/isValid?word=${word}`
+    const isValid = await fetch(WORD_INDEX_URL + url_path)
+
+    // invalid word, don't go to next round,
+    if (!isValid) {
+
+      // throw an error instead of return?
+      // or have int return as code for where return from
+      return 1
+    }
+    // compare word to target
+    const comparison_result_encoded = encode_guess_comparison(word, target_word)
+    const comparison_result = decode_guess_comparison(comparison_result_encoded)
+
+
+    // and call update to round in graphql_server
+
+
+    // and change players (redux call to currentPlayer)
+
+    // guessed correctly
+    if (comparison_result === new Array(comparison_result.length).fill(LetterState.GREEN)) {
+
+      return 2
+    }
+
+    return 0
+  }
+  async function pressEnter() {
+    const status = await make_guess(guess).catch((_): -1 => {
+      return -1
+    })
+    if (status == -1) {
+      // handle error?
+    }
+    if (status === 1) {
+      // Notify user they input an invalid word
+    }
+    // know for sure that we written to db, now we need to
+
+    if (status === 0) {
+      // http request sending a signal of updated db?
+    }
+    if (status === 2) {
+      // also need to end round and communicate that somehow to other player
+    }
+    // what if last round?
+    // then also need to start new round (or if this is last round end game?)
+  }
+
   function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+
     // Only current player, can affect page
-    // if (client_type === Client.Spectator) return
+    // if (client_type !== current_player) return
 
     const keyPressed: string = e.key
     console.log(`KeyDown: ${keyPressed}`)
 
     if (keyPressed === 'Enter' && guess.length === wordSize) {
-      // first check if its a valid word
-      
-      // call update to round in graphql_server
-      // and compare word to target 
-      // and change players (maybe can be done with graphql_server? )
+      pressEnter().then(() => {
+      })
     }
 
     if (keyPressed === 'Backspace') {
@@ -95,7 +160,8 @@ const Game = () => {
   }
 
   return (
-    <div tabIndex={0} onKeyDown={handleKeyDown}>
+    // supposedly -1 tabindex means keyboard focus on it, but not able to get to focus on it with tab
+    <div tabIndex={-1} onKeyDown={handleKeyDown}>
       Game ID: {gameID}
       <br/>
       Client Type: {client_type}
@@ -110,4 +176,4 @@ const Game = () => {
   );
 };
 
-export default Game
+export default Game;

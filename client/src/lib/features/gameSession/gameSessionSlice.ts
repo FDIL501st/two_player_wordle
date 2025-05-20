@@ -22,9 +22,11 @@ export const gameSessionSlice = createSlice({
   name: 'guessSession',
   initialState: initialGameSession,
   reducers: {
+    // resets gameSession
     reset: _ => {
       return initialGameSession
     },
+    // sets the gameSession, main use is when first joining a game
     set: (state, action: PayloadAction<GameSession>) => {
       const game_id = action.payload.game_id
       state.value = {
@@ -33,13 +35,18 @@ export const gameSessionSlice = createSlice({
       }
       // if no game_id given, ignore the client_type and set it to Spectator,
       // which is a view only client type
+    },
+    // switches the current player, P1 -> P2 or P2 -> P1
+    switch_player: (state) => {
+
     }
   }
 })
 
 export const {
   reset,
-  set
+  set,
+  switch_player
 } = gameSessionSlice.actions
 
 export const selectGameID = (state: RootState) => <gameID | undefined>state.gameSession.value.game_id

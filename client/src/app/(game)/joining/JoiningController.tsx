@@ -31,6 +31,8 @@ const JoiningController = ({children}: Children) => {
         game_id: newGame.game_id,
         client_type: newGame.player_type
       }))
+
+      // also need to set new round
     }
 
     // noinspection JSIgnoredPromiseFromCall

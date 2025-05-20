@@ -1,48 +1,62 @@
-import {describe, expect, jest, test} from '@jest/globals';
-import {encode_guess_comparison, decode_guess_comparison, LetterState} from "@/game/encoding";
+import {describe, expect, test} from '@jest/globals';
+import {
+  decode_guess_comparison,
+  decode_letterpool,
+  encode_guess_comparison,
+  encode_letterpool,
+  LetterState
+} from "@/app/encoding";
 
 describe('All Tests in encoding.ts', () => {
-  describe('Encoding Tests', () => {
+  describe('Encoding guess', () => {
     test('word match', () => {
       const word = "words"
-      const actual = encode_guess_comparison(word, word)[0]
-      const expected = 0b00_00_00_11_11_11_11_11
+      const actual = encode_guess_comparison(word, word)
+      const expected = 0b00_00_00_10_10_10_10_10
       expect(actual).toBe(expected)
     })
 
     test('word total mismatch', () => {
       const target = "words"
       const guess = "aaaaa"
-      const actual = encode_guess_comparison(guess, target)[0]
-      const expected = 0b00_00_00_01_01_01_01_01
+      const actual = encode_guess_comparison(guess, target)
+      const expected = 0b00_00_00_11_11_11_11_11
       expect(actual).toBe(expected)
     })
     test ('word partial match and no duplicate letters', () => {
       const target = "squat"
       const guess = "straw"
-      const actual = encode_guess_comparison(guess, target)[0]
-      const expected = 0b00_00_00_01_11_01_10_11
+      const actual = encode_guess_comparison(guess, target)
+      const expected = 0b00_00_00_11_10_11_01_10
       expect(actual).toBe(expected)
     })
 
     test('word partial match and guess has less duplicates than target', () => {
       const target = "falls"
       const guess = "longs"
-      const actual = encode_guess_comparison(guess, target)[0]
-      const expected = 0b00_00_00_11_01_01_01_10
+      const actual = encode_guess_comparison(guess, target)
+      const expected = 0b00_00_00_10_11_11_11_01
       expect(actual).toBe(expected)
     })
 
     test('word partial match and guess has more duplicates than target', () => {
       const target = "pzazz"
       const guess = "pizza"
-      const actual = encode_guess_comparison(guess, target)[0]
-      const expected = 0b00_00_00_10_11_10_01_11
+      const actual = encode_guess_comparison(guess, target)
+      const expected = 0b00_00_00_01_10_01_11_10
+      expect(actual).toBe(expected)
+    })
+
+    test('partial match where guess has duplicate but target does not', () => {
+      const target = "might"
+      const guess = "tight"
+      const actual = encode_guess_comparison(guess, target)
+      const expected = 0b00_00_00_10_10_10_10_11
       expect(actual).toBe(expected)
     })
   });
 
-  describe('Decoding Tests', () => {
+  describe('Decoding guess', () => {
     test('Decode empty', () => {
       const encoded = 0
       const actual = decode_guess_comparison(encoded)
@@ -55,14 +69,14 @@ describe('All Tests in encoding.ts', () => {
       const encoded = 0b00_00_00_10_11_10_01_11
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
-        LetterState.GREEN, LetterState.BLACK, LetterState.YELLOW, LetterState.GREEN, LetterState.YELLOW
+        LetterState.BLACK, LetterState.YELLOW, LetterState.GREEN, LetterState.BLACK, LetterState.GREEN
       ]
 
       expect(actual).toEqual(expected)
     })
 
     test('Decode eight comparisons', () => {
-      const encoded = 0b01_01_11_10_11_10_01_11
+      const encoded = 0b11_11_10_01_10_01_11_10
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
         LetterState.GREEN, LetterState.BLACK, LetterState.YELLOW, LetterState.GREEN, LetterState.YELLOW,
@@ -80,16 +94,53 @@ describe('All Tests in encoding.ts', () => {
       let encoded = view.getUint32(0)
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
-        LetterState.GREEN, LetterState.YELLOW, LetterState.BLACK, LetterState.YELLOW,
-        LetterState.YELLOW, LetterState.YELLOW, LetterState.BLACK, LetterState.YELLOW,
-        LetterState.YELLOW, LetterState.BLACK, LetterState.BLACK, LetterState.YELLOW,
-        LetterState.GREEN, LetterState.GREEN, LetterState.GREEN, LetterState.GREEN,
+        LetterState.BLACK, LetterState.GREEN, LetterState.YELLOW, LetterState.GREEN,
+        LetterState.GREEN, LetterState.GREEN, LetterState.YELLOW, LetterState.GREEN,
+        LetterState.GREEN, LetterState.YELLOW, LetterState.YELLOW, LetterState.GREEN,
+        LetterState.BLACK, LetterState.BLACK, LetterState.BLACK, LetterState.BLACK,
       ]
 
       expect(actual).toEqual(expected)
     })
   });
-  describe('JS Endianness ', () => {
+
+  describe('Encode letterpool', () => {
+    test('encode new letterpool', () => {
+      const new_letterpool = new Array<LetterState>(26).fill(LetterState.WHITE)
+      const expected = BigInt(0)
+      const actual = encode_letterpool(new_letterpool)
+
+      expect(actual).toEqual(expected)
+    })
+
+    test('encode largest value letterpool', () => {
+      const largest_value_letterpool = new Array<LetterState>(26).fill(LetterState.BLACK)
+      const expected = BigInt(0xf_ffff_ffff_ffff)
+      const actual = encode_letterpool(largest_value_letterpool)
+
+      expect(actual).toEqual(expected)
+    })
+  });
+
+  describe('Decode letterpool', () => {
+    test('Decode new letterpool', () => {
+      const new_letterpool_encoded = BigInt(0)
+      const expected = new Array<LetterState>(26).fill(LetterState.WHITE)
+      const actual = decode_letterpool(new_letterpool_encoded)
+
+      expect(actual).toEqual(expected)
+    })
+
+    test('Decode largest value letterpool', () => {
+      const largest_value_letterpool = BigInt(0xf_ffff_ffff_ffff)
+      const expected = new Array<LetterState>(26).fill(LetterState.BLACK)
+      const actual = decode_letterpool(largest_value_letterpool)
+
+      expect(actual).toEqual(expected)
+    })
+  });
+
+  describe('JS Endianness', () => {
     test('ArrayBuffer get little endian', () => {
       let buffer = new ArrayBuffer(2)
       let view = new DataView(buffer)
