@@ -120,4 +120,8 @@ impl Mutation {
             Ok(_) => Ok(true),
         }
     }
+
+    async fn add_turn(context: &MongoClient) -> FieldResult<bool> {
+        Ok(true)
+    }
 }

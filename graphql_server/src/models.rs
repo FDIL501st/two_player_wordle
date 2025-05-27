@@ -48,7 +48,7 @@ pub struct Round {
 
     /// The state of all the letters in the round.
     /// This is an encoded value, clients are responsible for encoding and decoding the bytes
-    letterpool_state: i32,
+    letterpool_state: i64,
 
     /// The current guess number the round is on.
     /// Guess number starts at 0.
