@@ -3,8 +3,11 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::errors::{GraphqlServerError, GraphqlServerResult, CODE422};
-use super::scalars::*;
 
+/// scalar types to be used by some fields in the models
+pub mod scalars;
+
+use self::scalars::*;
 
 // This file contains the models/objects represented within the graphql server
 

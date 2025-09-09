@@ -55,7 +55,7 @@ pub mod mutation;
 pub mod models;
 
 /// scalar types to be used by some fields in the models
-pub mod scalars;
+// pub mod scalars;
 
 /// module for the errors that will be used within this server
 pub mod errors;
