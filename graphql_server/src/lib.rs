@@ -54,6 +54,9 @@ pub mod mutation;
 /// module for the models (graphql types) that will be represented in this server
 pub mod models;
 
+/// scalar types to be used by some fields in the models
+pub mod scalars;
+
 /// module for the errors that will be used within this server
 pub mod errors;
 
