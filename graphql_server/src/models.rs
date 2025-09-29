@@ -7,7 +7,11 @@ use super::errors::{GraphqlServerError, GraphqlServerResult, CODE422};
 /// scalar types to be used by some fields in the models
 pub mod scalars;
 
+/// detailed implementations of functions for encoding and decoding letter states
+pub mod encoding;
+
 use self::scalars::*;
+use self::encoding::*;
 
 // This file contains the models/objects represented within the graphql server
 

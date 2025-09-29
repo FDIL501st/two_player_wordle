@@ -3,15 +3,15 @@ import {ArgumentError} from '@/app/errors'
 export enum LetterState {
   WHITE = 0,
   YELLOW = 1,
-  GREEN = 2,
-  BLACK = 3,
+  BLACK = 2,
+  GREEN = 3,
 }
 
 /** when doing comparisons between 2 words, letters can have 3 following results:
  * Unused bits: 0b00 (0)
  * Yellow (letter in word, but incorrect spot): 0b01 (1)
- * Green (letter in correct spot): 0b10 (2)
- * Black (letter not in word): 0b11 (3)
+ * Black (letter not in word): 0b10 (2)
+ * Green (letter in correct spot): 0b11 (3)
  */
 
 export function encode_guess_comparison(guess_word: string, target_word: string): number {

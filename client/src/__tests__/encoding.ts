@@ -12,7 +12,7 @@ describe('All Tests in encoding.ts', () => {
     test('word match', () => {
       const word = "words"
       const actual = encode_guess_comparison(word, word)
-      const expected = 0b00_00_00_10_10_10_10_10
+      const expected = 0b00_00_00_11_11_11_11_11
       expect(actual).toBe(expected)
     })
 
@@ -20,14 +20,14 @@ describe('All Tests in encoding.ts', () => {
       const target = "words"
       const guess = "aaaaa"
       const actual = encode_guess_comparison(guess, target)
-      const expected = 0b00_00_00_11_11_11_11_11
+      const expected = 0b00_00_00_10_10_10_10_10
       expect(actual).toBe(expected)
     })
     test ('word partial match and no duplicate letters', () => {
       const target = "squat"
       const guess = "straw"
       const actual = encode_guess_comparison(guess, target)
-      const expected = 0b00_00_00_11_10_11_01_10
+      const expected = 0b00_00_00_10_11_10_01_11
       expect(actual).toBe(expected)
     })
 
@@ -35,7 +35,7 @@ describe('All Tests in encoding.ts', () => {
       const target = "falls"
       const guess = "longs"
       const actual = encode_guess_comparison(guess, target)
-      const expected = 0b00_00_00_10_11_11_11_01
+      const expected = 0b00_00_00_11_10_10_10_01
       expect(actual).toBe(expected)
     })
 
@@ -43,7 +43,7 @@ describe('All Tests in encoding.ts', () => {
       const target = "pzazz"
       const guess = "pizza"
       const actual = encode_guess_comparison(guess, target)
-      const expected = 0b00_00_00_01_10_01_11_10
+      const expected = 0b00_00_00_01_11_01_10_11
       expect(actual).toBe(expected)
     })
 
@@ -51,7 +51,7 @@ describe('All Tests in encoding.ts', () => {
       const target = "might"
       const guess = "tight"
       const actual = encode_guess_comparison(guess, target)
-      const expected = 0b00_00_00_10_10_10_10_11
+      const expected = 0b00_00_00_11_11_11_11_10
       expect(actual).toBe(expected)
     })
   });
@@ -66,7 +66,7 @@ describe('All Tests in encoding.ts', () => {
     })
 
     test('Decode five comparisons', () => {
-      const encoded = 0b00_00_00_10_11_10_01_11
+      const encoded = 0b00_00_00_11_10_11_01_10
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
         LetterState.BLACK, LetterState.YELLOW, LetterState.GREEN, LetterState.BLACK, LetterState.GREEN
@@ -76,7 +76,7 @@ describe('All Tests in encoding.ts', () => {
     })
 
     test('Decode eight comparisons', () => {
-      const encoded = 0b11_11_10_01_10_01_11_10
+      const encoded = 0b10_10_11_01_11_01_10_11
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
         LetterState.GREEN, LetterState.BLACK, LetterState.YELLOW, LetterState.GREEN, LetterState.YELLOW,
@@ -89,8 +89,8 @@ describe('All Tests in encoding.ts', () => {
     test('Decode full 32-bit encoded number', () => {
       let buffer = new ArrayBuffer(4)
       let view = new DataView(buffer)
-      // binary: 0b1111_1111_1001_0110_1001_1010_1001_1011
-      view.setUint32(0, 0xff96_9a9b)
+      // binary: 0b1010_1010_1101_0111_1101_1111_1101_1110
+      view.setUint32(0, 0b1010_1010_1101_0111_1101_1111_1101_1110);
       let encoded = view.getUint32(0)
       const actual = decode_guess_comparison(encoded)
       const expected: LetterState[] = [
@@ -114,7 +114,7 @@ describe('All Tests in encoding.ts', () => {
     })
 
     test('encode largest value letterpool', () => {
-      const largest_value_letterpool = new Array<LetterState>(26).fill(LetterState.BLACK)
+      const largest_value_letterpool = new Array<LetterState>(26).fill(LetterState.GREEN)
       const expected = BigInt(0xf_ffff_ffff_ffff)
       const actual = encode_letterpool(largest_value_letterpool)
 
@@ -133,7 +133,7 @@ describe('All Tests in encoding.ts', () => {
 
     test('Decode largest value letterpool', () => {
       const largest_value_letterpool = BigInt(0xf_ffff_ffff_ffff)
-      const expected = new Array<LetterState>(26).fill(LetterState.BLACK)
+      const expected = new Array<LetterState>(26).fill(LetterState.GREEN)
       const actual = decode_letterpool(largest_value_letterpool)
 
       expect(actual).toEqual(expected)
@@ -176,9 +176,9 @@ describe('All Tests in encoding.ts', () => {
       // just to make sure we start with 0
       uint16[0] = 0
       uint16[0] |= (0x0002 << 8)
-      uint16[0] |= (0x0011)
+      uint16[0] |= (0x0010)
       const actual = uint16[0]
-      const expected = 0x0211
+      const expected = 0x0210
       expect(actual).toBe(expected)
     })
 
