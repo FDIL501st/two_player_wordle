@@ -1,5 +1,7 @@
-use std::cmp::min;
+use std::{cmp::min, collections::HashMap};
 use asserting::prelude::*;
+
+use super::scalars::U54;
 
 /// Represents the state of a letter in a round.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
@@ -61,7 +63,7 @@ impl Into<u8> for LetterState {
 
 /// Combines two `LetterState` values within a guess, returning the the state that will be kept in the backend.
 /// The order of states stored is: GREEN > YELLOW > BLACK.
-fn combine_guess_letter_states(state1: LetterState, state2: LetterState) -> LetterState {
+pub fn combine_guess_letter_states(state1: LetterState, state2: LetterState) -> LetterState {
     assert_that!(state1).is_not_equal_to(LetterState::WHITE);
     assert_that!(state2).is_not_equal_to(LetterState::WHITE);
 
@@ -71,6 +73,41 @@ fn combine_guess_letter_states(state1: LetterState, state2: LetterState) -> Lett
     c = (c+3) & 0b11; // reverse the +1 from above
 
     return c.into();
+}
+
+/// Prepares the guess for encoding by combining letter states for duplicate letters.
+pub fn prepare_guess_for_encoding(letters: Vec<char>, states: Vec<LetterState>) -> HashMap<char, LetterState> {
+    assert_that!(letters.len()).is_equal_to(states.len());
+    
+    // assert no WHITE states is redundant as combine_guess_letter_states below asserts this as well
+    assert_that!(states.clone()).does_not_contain(LetterState::WHITE);
+    // need to clone here else can't use states.iter() below
+    // this is due to assert takes ownership of states
+
+
+    let mut letter_state_map: HashMap<char, LetterState> = HashMap::new();
+
+    for (letter, state) in letters.iter().zip(states.iter()) {
+
+        if let Some(existing_state) = letter_state_map.get(letter) {
+            // found existing letter, combine states
+            let combined_state = combine_guess_letter_states(*existing_state, *state);
+            letter_state_map.insert(*letter, combined_state);
+        } else {
+            // insert new letter with its state
+            letter_state_map.insert(*letter, *state);
+        }
+    }
+
+    letter_state_map
+    
+}
+
+
+impl U54 {
+    pub fn encode_guess_results() {
+        
+    }
 }
 
 #[cfg(test)]
