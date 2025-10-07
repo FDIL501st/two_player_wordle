@@ -1,10 +1,17 @@
-use std::ops::{AddAssign, SubAssign};
+use std::ops::{AddAssign, BitOr, BitOrAssign, SubAssign};
 
 use juniper::{GraphQLScalar, InputValue, ScalarValue, Value};
 use serde::{Deserialize, Serialize};
+use asserting::prelude::*;
+
+use super::encoding::LetterState;
 
 #[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[graphql(parse_token(f64))]
+/// A custom scalar to represent an unsigned 54-bit integer.
+/// Main use is to encode the letterpool of a round.
+/// 54 bits is enough to encode all 26 letters of the alphabet,
+/// as each letter can be represented in 2 bits.
 pub struct U54(u64);
 
 impl U54 {
@@ -38,6 +45,17 @@ impl U54 {
             }
         }
     }
+
+    /// getter for the inner u64 value
+    fn get(&self) -> u64 {
+        self.0
+    }
+
+    /// setter for the inner u64 value
+    fn set(&mut self, value: u64) {
+        self.0 = value
+    }
+
 }
 
 impl From<u64> for U54 {
@@ -57,6 +75,7 @@ impl From<f64> for U54 {
         U54(value as u64)
     }
 }
+
 
 impl AddAssign<i32> for U54 {
     fn add_assign(&mut self, rhs: i32) {
@@ -94,8 +113,23 @@ impl SubAssign<u64> for U54 {
     }
 }
 
+impl BitOrAssign<u64> for U54 {
+    fn bitor_assign(&mut self, rhs: u64) {
+        self.0 |= rhs
+    }
+}
+
+impl BitOr<u64> for U54 {
+    type Output = U54;
+
+    fn bitor(self, rhs: u64) -> U54 {
+        U54(self.0 | rhs)
+    }
+}
+
 #[derive(GraphQLScalar, Debug, Serialize, Deserialize)]
 #[graphql(parse_token(f64))]
+/// A custom scalar to represent an unsigned 32-bit integer.
 pub struct U32(u32);
 
 impl U32 {
@@ -179,6 +213,7 @@ impl SubAssign<u32> for U32 {
 
 #[derive(GraphQLScalar, Debug, Serialize, Deserialize)]
 #[graphql(parse_token(i32))]
+/// A custom scalar to represent an unsigned 16-bit integer.
 pub struct U16(u16);
 
 impl U16 {
@@ -206,6 +241,12 @@ impl U16 {
     }
 }
 
+impl From<u64> for U16 {
+    fn from(value: u64) -> Self {
+        U16(value as u16)
+    }
+}
+
 impl From<u16> for U16 {
     fn from(value: u16) -> Self {
         U16(value)
@@ -217,6 +258,135 @@ impl From<i32> for U16 {
         U16(value as u16)
     }
 }
+
+impl From<u8> for U16 {
+    fn from(value: u8) -> Self {
+        U16(value as u16)
+    }
+}
+
+impl Into<u64> for U16 {
+    fn into(self) -> u64 {
+        self.0 as u64
+    }
+}
+
+impl Into<u16> for U16 {
+    fn into(self) -> u16 {
+        self.0
+    }
+}
+
+
+
+impl From<Vec<LetterState>> for U16 {
+    fn from(value: Vec<LetterState>) -> Self {
+        assert_that!(value.len()).is_less_than(9);
+        // 8 is max word length, so should never be greater than 9
+
+        let mut num: u16 = 0;
+
+        for (i, state) in value.iter().enumerate() {
+            let state_value: u16 = LetterState::into(*state);
+            num |= state_value << (i * 2); // each state takes 2 bits
+        }
+
+        U16(num)
+    }
+    
+}
+impl Into<Vec<LetterState>> for U16 {
+    fn into(self) -> Vec<LetterState> {
+        let mut states: Vec<LetterState> = Vec::new();
+        let mut num = self.0;
+
+        while num > 0 {
+            let state_value = (num & 0b11) as u8; // get the last 2 bits
+            let state = LetterState::from(state_value);
+            states.push(state);
+            num >>= 2; // shift right by 2 bits to process the next letter
+        }
+
+        states
+    }
+}
+impl Into<Vec<LetterState>> for &U16 {
+    fn into(self) -> Vec<LetterState> {
+        let mut states: Vec<LetterState> = Vec::new();
+        let mut num = self.0;
+
+        while num > 0 {
+            let state_value = (num & 0b11) as u8; // get the last 2 bits
+            let state = LetterState::from(state_value);
+            states.push(state);
+            num >>= 2; // shift right by 2 bits to process the next letter
+        }
+
+        states
+    }
+}
+
+impl From<Vec<u8>> for U16 {
+    fn from(value: Vec<u8>) -> Self {
+        assert_that!(value.len()).is_less_than(9);
+        // 8 is max word length, so should never be greater than 9
+
+        let mut num: u16 = 0;
+
+        for (i, state_value) in value.iter().enumerate() {
+            let state_value_u16: u16 = *state_value as u16;
+            num |= state_value_u16 << (i * 2); // each state takes 2 bits
+        }
+
+        U16(num)
+    }
+    
+}
+impl From<Vec<&u8>> for U16 {
+    fn from(value: Vec<&u8>) -> Self {
+        assert_that!(value.len()).is_less_than(9);
+        // 8 is max word length, so should never be greater than 9
+
+        let mut num: u16 = 0;
+
+        for (i, state_value) in value.iter().enumerate() {
+            let state_value_u16: u16 = **state_value as u16;
+            num |= state_value_u16 << (i * 2); // each state takes 2 bits
+        }
+
+        U16(num)
+    }
+    
+}
+impl Into<Vec<u8>> for U16 {
+    fn into(self) -> Vec<u8> {
+        let mut states: Vec<u8> = Vec::new();
+        let mut num = self.0;
+
+        while num > 0 {
+            let state_value = (num & 0b11) as u8; // get the last 2 bits
+            states.push(state_value);
+            num >>= 2; // shift right by 2 bits to process the next letter
+        }
+
+        states
+    }
+}
+impl Into<Vec<u8>> for &U16 {
+    fn into(self) -> Vec<u8> {
+        let mut states: Vec<u8> = Vec::new();
+        let mut num = self.0;
+
+        while num > 0 {
+            let state_value = (num & 0b11) as u8; // get the last 2 bits
+            states.push(state_value);
+            num >>= 2; // shift right by 2 bits to process the next letter
+        }
+
+        states
+    }
+}
+
 
 impl AddAssign<i32> for U16 {
     fn add_assign(&mut self, rhs: i32) {
@@ -247,6 +417,7 @@ impl SubAssign<u16> for U16 {
 
 #[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[graphql(parse_token(i32))]
+/// A custom scalar to represent an unsigned 8-bit integer.
 pub struct U8(u8);
 
 impl U8 {
