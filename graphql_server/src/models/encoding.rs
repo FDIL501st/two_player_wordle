@@ -1,4 +1,4 @@
-use std::{cmp::min, collections::{HashMap}};
+use std::{cmp::min, collections::{HashMap, HashSet}};
 use asserting::prelude::*;
 
 use super::scalars::{U54, U16};
@@ -117,6 +117,9 @@ pub fn combine_guess_letter_states(state1: LetterState, state2: LetterState) -> 
 
     return c.into();
 }
+
+/// Combines two encoded `LetterState` values within a guess, returning the the state that will be kept in the backend.
+/// The order of states stored is: GREEN > YELLOW > BLACK.
 pub fn combine_guess_letter_states_encoded(state1: u8, state2: u8) -> u8 {
     assert_that!(state1).is_not_equal_to(LetterState::WHITE as u8);
     assert_that!(state2).is_not_equal_to(LetterState::WHITE as u8);
@@ -130,19 +133,26 @@ pub fn combine_guess_letter_states_encoded(state1: u8, state2: u8) -> u8 {
 }
 
 /// Prepares the guess for encoding by combining letter states for duplicate letters.
-pub fn prepare_guess_for_encoding(guess: &String, states: &U16) -> (String, U16) { 
+/// This method also deals with correcting the reverse order encoding of `states`, so
+/// the output encoded value is not in reverse order (first 2 bits is state of first letter)
+fn prepare_guess_for_encoding(guess: &String, states: &U16) -> (String, U16) { 
     let num_chars = guess.len();
     assert_that!(num_chars).is_less_than(9);
     // 8 is max word length, so should never be greater than 9
 
     // convert U16 to Vec<u8>
     let letter_states: Vec<u8> = states.into();
-    // assert no WHITE states is redundant as combine_guess_letter_states below asserts this as well
+    // assert no WHITE states is redundant as combine_guess_letter_states_endcoded below asserts this as well
     assert_that!(&letter_states).does_not_contain(&(LetterState::WHITE as u8));
+    
+    // assert lengths match
+    assert_that!(letter_states.len()).is_equal_to(num_chars);
 
-    let mut letter_state_map: HashMap<char, u8> = HashMap::new();
+    let mut letter_state_map: HashMap<char, u8> = HashMap::with_capacity(num_chars);
 
-    for (letter, state) in guess.chars().zip(letter_states.iter()) {
+    for (letter, state) in guess.chars().rev().zip(letter_states.iter()) {
+        // reverse guess iterator as encoding was done in reverse order
+        // meaning first state is for last letter
 
         if let Some(existing_state) = letter_state_map.get(&letter) {
             // found existing letter, combine states
@@ -259,14 +269,148 @@ mod tests {
         assert_that!(combine_guess_letter_states(LetterState::GREEN, LetterState::YELLOW)).is_equal_to(LetterState::GREEN);
     }
 
-    // #[test]
-    // fn ref_vec_contains_ref_value() {
-    //     let vec = vec![LetterState::BLACK, LetterState::YELLOW];
-    //     assert_that!(&vec).contains(&LetterState::BLACK);
-    // }
-    // #[test]
-    // fn ref_vec_does_not_contain_ref_value() {
-    //     let vec = vec![LetterState::BLACK, LetterState::YELLOW];
-    //     assert_that!(&vec).does_not_contain(&LetterState::WHITE);
-    // }
+
+    // Tests for prepare_guess_for_encoding function
+
+    /// a type used to represent a letter and its state together
+    type LetterStatePair = (char, u8);
+    #[test]
+    fn prepare_guess_no_duplicate_letters_same_output_state() {
+        let guess = String::from("grape");
+        let states = U16::from(0b11_11_10_10_01); // G: GREEN, R: GREEN, A: BLACK, P: BLACK, E: YELLOW
+        // target was word "green"
+        
+        let (letters, new_states) = prepare_guess_for_encoding(&guess, &states);
+        // prepare_guess_for_encoding does not keep order as it uses a HashMap
+
+        // so we will make a HashSet of pairs we expect the output to have
+        let expected_pairs: HashSet<LetterStatePair> = HashSet::from(
+            [('g', LetterState::GREEN as u8),
+                ('r', LetterState::GREEN as u8),
+                ('a', LetterState::BLACK as u8),
+                ('p', LetterState::BLACK as u8),
+                ('e', LetterState::YELLOW as u8)]
+        );
+        
+        let mut actual_pairs: HashSet<LetterStatePair> = HashSet::with_capacity(expected_pairs.len());
+        for (letter, state) in letters.chars().zip(new_states.into_iter()) {
+            actual_pairs.insert((letter, state));
+        }
+
+        assert_that!(actual_pairs.len()).is_equal_to(expected_pairs.len());
+        assert_that!(actual_pairs).contains_all_of(expected_pairs);
+
+        // if actual pairs has extra entries that expected pairs does not have, the assertion will still pass
+        // why we check if they have the same size first, as the goal is to ensure they are the same Sets
+    }
+
+    #[test]
+    fn prepare_guess_one_duplicate_letter_different_duplcaite_states() {
+        let guess = String::from("tight");
+        let states = U16::from(0b10_11_11_11_11);   // t: BLACK, i: GREEN, g: GREEN, h: GREEN, t: GREEN
+        // target was might
+
+        let expected_pairs: HashSet<LetterStatePair> = HashSet::from(
+            [('t', LetterState::GREEN as u8),
+                ('i', LetterState::GREEN as u8),
+                ('g', LetterState::GREEN as u8),
+                ('h', LetterState::GREEN as u8)]
+        );  // one duplicate letter, so should end up with only 4 states
+
+        let (letters, new_states) = prepare_guess_for_encoding(&guess, &states);
+
+        let mut actual_pairs: HashSet<LetterStatePair> = HashSet::with_capacity(expected_pairs.len());
+
+
+        for (letter, state) in letters.chars().zip(new_states.into_iter()) {
+            actual_pairs.insert((letter, state));
+        }
+
+        assert_that!(actual_pairs.len()).is_equal_to(expected_pairs.len());
+        assert_that!(actual_pairs).contains_all_of(expected_pairs);
+    }
+
+    #[test]
+    fn prepare_guess_one_duplicate_letter_same_duplicate_state() {
+        let guess = String::from("tight");
+        let states = U16::from(0b10_11_10_10_10);   // t: BLACK, i: GREEN, g: BLACK, h: BLACK, t: BLACK
+        // target was fills
+
+        let expected_pairs: HashSet<LetterStatePair> = HashSet::from(
+            [('t', LetterState::BLACK as u8),
+                ('i', LetterState::GREEN as u8),
+                ('g', LetterState::BLACK as u8),
+                ('h', LetterState::BLACK as u8)]
+        );  // one duplicate letter, so should end up with only 4 states
+
+        let (letters, new_states) = prepare_guess_for_encoding(&guess, &states);
+
+        let mut actual_pairs: HashSet<LetterStatePair> = HashSet::with_capacity(expected_pairs.len());
+
+
+        for (letter, state) in letters.chars().zip(new_states.into_iter()) {
+            actual_pairs.insert((letter, state));
+        }
+
+        assert_that!(actual_pairs.len()).is_equal_to(expected_pairs.len());
+        assert_that!(actual_pairs).contains_all_of(expected_pairs);
+    }
+
+        #[test]
+    fn prepare_guess_one_duplicate_letter_appear_three_times() {
+        let guess = String::from("pzazz");
+        let states = U16::from(0b11_01_01_11_10);   // p: GREEN, z: YELLOW, a: YELLOW, z: GREEN, z: BLACK
+        // target was pizza
+
+        let expected_pairs: HashSet<LetterStatePair> = HashSet::from(
+            [('p', LetterState::GREEN as u8),
+                ('z', LetterState::GREEN as u8),
+                ('a', LetterState::YELLOW as u8)]
+        );  // one duplicate letter, appear 3 times, so end up with 3 output states
+
+        let (letters, new_states) = prepare_guess_for_encoding(&guess, &states);
+
+        let mut actual_pairs: HashSet<LetterStatePair> = HashSet::with_capacity(expected_pairs.len());
+
+
+        for (letter, state) in letters.chars().zip(new_states.into_iter()) {
+            actual_pairs.insert((letter, state));
+        }
+
+        assert_that!(actual_pairs.len()).is_equal_to(expected_pairs.len());
+        assert_that!(actual_pairs).contains_all_of(expected_pairs);
+    }
+
+
+    // tests for encode_guess_results
+
+    #[test]
+    fn encode_guess_all_black_new_u54() {
+        let guess = String::from("sales");
+        // target is photo
+        let states = U16::from(0b10_10_10_10_10);
+
+        let mut actual_u54: U54 = U54::from(0);    // new u54
+
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_00_10u64);
+
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
+
+    #[test]
+    fn encode_guess_all_black_not_new_u54() {
+        let guess = String::from("sales");
+        // target is photo
+        let states = U16::from(0b10_10_10_10_10);
+        // suppose made previous guess: "fails"
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_00_00_00_00_10u64);    // new u54
+
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_10_00_00_00_10u64);
+
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
 }

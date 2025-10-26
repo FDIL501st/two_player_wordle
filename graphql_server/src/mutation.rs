@@ -121,7 +121,7 @@ impl Mutation {
         }
     }
 
-    async fn add_turn(context: &MongoClient) -> FieldResult<bool> {
+    async fn add_turn(_context: &MongoClient) -> FieldResult<bool> {
         Ok(true)
     }
 }

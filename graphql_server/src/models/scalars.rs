@@ -46,11 +46,13 @@ impl U54 {
         }
     }
 
+    #[allow(dead_code)]
     /// getter for the inner u64 value
     fn get(&self) -> u64 {
         self.0
     }
 
+    #[allow(dead_code)]
     /// setter for the inner u64 value
     fn set(&mut self, value: u64) {
         self.0 = value
@@ -211,7 +213,7 @@ impl SubAssign<u32> for U32 {
     }
 }
 
-#[derive(GraphQLScalar, Debug, Serialize, Deserialize)]
+#[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[graphql(parse_token(i32))]
 /// A custom scalar to represent an unsigned 16-bit integer.
 pub struct U16(u16);
@@ -360,7 +362,7 @@ impl From<Vec<&u8>> for U16 {
 }
 impl Into<Vec<u8>> for U16 {
     fn into(self) -> Vec<u8> {
-        let mut states: Vec<u8> = Vec::new();
+        let mut states: Vec<u8> = Vec::with_capacity(8); // can encode at most 8 letters with 16 bits
         let mut num = self.0;
 
         while num > 0 {
@@ -374,7 +376,7 @@ impl Into<Vec<u8>> for U16 {
 }
 impl Into<Vec<u8>> for &U16 {
     fn into(self) -> Vec<u8> {
-        let mut states: Vec<u8> = Vec::new();
+        let mut states: Vec<u8> = Vec::with_capacity(8); // can encode at most 8 letters with 16 bits
         let mut num = self.0;
 
         while num > 0 {
@@ -412,6 +414,20 @@ impl SubAssign<i32> for U16 {
 impl SubAssign<u16> for U16 {
     fn sub_assign(&mut self, rhs: u16) {
         self.0 -= rhs
+    }
+}
+
+impl Iterator for U16 {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0 == 0 {
+            None
+        } else {
+            let state_value = (self.0 & 0b11) as u8; // get the last 2 bits
+            self.0 >>= 2; // shift right by 2 bits to process the next letter
+            Some(state_value)
+        }
     }
 }
 

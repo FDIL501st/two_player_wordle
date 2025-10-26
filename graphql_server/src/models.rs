@@ -11,7 +11,7 @@ pub mod scalars;
 pub mod encoding;
 
 use self::scalars::*;
-use self::encoding::*;
+// use self::encoding::*;
 
 // This file contains the models/objects represented within the graphql server
 
