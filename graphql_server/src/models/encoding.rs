@@ -411,7 +411,7 @@ mod tests {
         // target is photo
         let states = U16::from(0b10_10_10_10_10);
         // suppose made previous guess: "fails"
-        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_00_00_00_00_10u64);    // new u54
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_00_00_00_00_10u64);
 
         actual_u54.encode_guess_results(&guess, &states);
 
@@ -443,7 +443,7 @@ mod tests {
         // black: y, l, o, w, p, h
         // yellow:
         // green: g
-        let mut actual_u54: U54 = U54::from(0b00_00_00_10_00_00_00_00_00_00_10_10_00_00_10_00_00_00_10_11_00_00_00_00_00_00u64);    // new u54
+        let mut actual_u54: U54 = U54::from(0b00_00_00_10_00_00_00_00_00_00_10_10_00_00_10_00_00_00_10_11_00_00_00_00_00_00u64);
 
         actual_u54.encode_guess_results(&guess, &states);
         // updated states
@@ -460,7 +460,7 @@ mod tests {
         let guess = String::from("graph");
         let states = U16::from(0b10_10_11_10_10);   // only a is green, rest is black
 
-        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_01u64);    // new u54
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_01u64);
         // only a is yellow, rest kept white
         actual_u54.encode_guess_results(&guess, &states);
 
@@ -468,5 +468,19 @@ mod tests {
 
         assert_that!(actual_u54).is_equal_to(expected_u54);
 
+    }
+
+    #[test]
+    fn encode_guess_green_not_update_with_yellow() {
+        let guess = String::from("graph");
+        let states = U16::from(0b10_10_01_10_10);   // only a is yellow, rest is black
+
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_11u64);
+        // only a is yellow, rest kept white
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_10_00_10_00_00_00_00_00_00_00_10_10_00_00_00_00_00_11u64);
+        // expect a to not update
+        assert_that!(actual_u54).is_equal_to(expected_u54);
     }
 }
