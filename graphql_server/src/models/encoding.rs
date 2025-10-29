@@ -1,4 +1,4 @@
-use std::{cmp::min, collections::{HashMap, HashSet}};
+use std::{cmp::min, collections::HashMap};
 use asserting::prelude::*;
 
 use super::scalars::{U54, U16};
@@ -211,6 +211,7 @@ impl U54 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::HashSet;
 
     // test that WHITE input panics
     #[test]
@@ -383,6 +384,11 @@ mod tests {
 
 
     // tests for encode_guess_results
+    // consider using mockall crate to mock prepare_guess_for_encoding that is called within
+    // encode_guess_results
+
+    // Note: Doesn't seem mockall supports mocking standalone functions,
+    // only trait functions or structs
 
     #[test]
     fn encode_guess_all_black_new_u54() {
@@ -412,5 +418,55 @@ mod tests {
         let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_10_00_00_00_10u64);
 
         assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
+
+    #[test]
+    fn encode_guess_atleast_one_yellow_and_green_new_u54() {
+         let guess = String::from("grape");
+        // target is green
+        let states = U16::from(0b11_11_10_10_01);
+
+        let mut actual_u54: U54 = U54::from(0);    // new u54
+
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_11_00_10_00_00_00_00_00_00_00_00_11_00_01_00_00_00_10u64);
+
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
+
+    #[test]
+    fn encode_guess_atleast_one_yellow_and_green_not_new_u54() {
+         let guess = String::from("grape");
+        // target is green
+        let states = U16::from(0b11_11_10_10_01);
+        // black: y, l, o, w, p, h
+        // yellow:
+        // green: g
+        let mut actual_u54: U54 = U54::from(0b00_00_00_10_00_00_00_00_00_00_10_10_00_00_10_00_00_00_10_11_00_00_00_00_00_00u64);    // new u54
+
+        actual_u54.encode_guess_results(&guess, &states);
+        // updated states
+        // black: a
+        // yellow: e
+        // green: r
+        let expected_u54: U54 = U54::from(0b00_00_00_10_00_00_00_00_11_00_10_10_00_00_10_00_00_00_10_11_00_01_00_00_00_10u64);
+
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
+
+    #[test]
+    fn encode_guess_update_yellow_with_green() {
+        let guess = String::from("graph");
+        let states = U16::from(0b10_10_11_10_10);   // only a is green, rest is black
+
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_00_01u64);    // new u54
+        // only a is yellow, rest kept white
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_10_00_10_00_00_00_00_00_00_00_10_10_00_00_00_00_00_11u64);
+
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+
     }
 }
