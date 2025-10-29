@@ -47,10 +47,10 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-target-
 
-    - name: Build backend project
+    - name: Build graphql_server
       run: cargo build --verbose
       working-directory: graphql_server
 
-    - name: Run tests in backend
+    - name: Run tests in graphql_server
       run: cargo test --verbose
       working-directory: graphql_server
