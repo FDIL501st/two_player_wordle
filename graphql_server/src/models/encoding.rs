@@ -391,32 +391,33 @@ mod tests {
     // only trait functions or structs
 
     #[test]
-    fn encode_guess_all_black_new_u54() {
+    fn encode_guess_only_update_guess_letters_others_white() {
         let guess = String::from("sales");
         // target is photo
         let states = U16::from(0b10_10_10_10_10);
 
-        let mut actual_u54: U54 = U54::from(0);    // new u54
+        let mut actual_u54: U54 = U54::from(0);    // all white
 
         actual_u54.encode_guess_results(&guess, &states);
 
         let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_00_10u64);
-
+        // only letters: s, a, l, e are updated
         assert_that!(actual_u54).is_equal_to(expected_u54);
     }
 
     #[test]
-    fn encode_guess_all_black_not_new_u54() {
+    fn encode_guess_only_update_guess_letters_others_mixed_states() {
         let guess = String::from("sales");
         // target is photo
         let states = U16::from(0b10_10_10_10_10);
-        // suppose made previous guess: "fails"
-        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_00_00_00_00_10u64);
+
+        let mut actual_u54: U54 = U54::from(0b01_10_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_00_00_00_00_10u64);
 
         actual_u54.encode_guess_results(&guess, &states);
 
-        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_10_00_00_00_10u64);
-
+        let expected_u54: U54 = U54::from(0b01_10_00_00_00_00_00_10_00_00_00_00_00_00_10_00_00_10_00_00_10_10_00_00_00_10u64);
+        // only letters: s, a, l, e are updated
+        // other non-white letters should not be touched
         assert_that!(actual_u54).is_equal_to(expected_u54);
     }
 
@@ -481,6 +482,20 @@ mod tests {
 
         let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_10_00_10_00_00_00_00_00_00_00_10_10_00_00_00_00_00_11u64);
         // expect a to not update
+        assert_that!(actual_u54).is_equal_to(expected_u54);
+    }
+
+    #[test]
+    fn encode_guess_not_update_when_same_state() {
+        let guess = String::from("graph");
+        let states = U16::from(0b11_11_11_11_11);   // all green
+
+        let mut actual_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_11_00_11_00_00_00_00_00_00_00_11_11_00_00_00_00_00_11u64);
+        // g, r, a, p, h already green
+        actual_u54.encode_guess_results(&guess, &states);
+
+        let expected_u54: U54 = U54::from(0b00_00_00_00_00_00_00_00_11_00_11_00_00_00_00_00_00_00_11_11_00_00_00_00_00_11u64);
+        // expected is same as actual as no updated should be made
         assert_that!(actual_u54).is_equal_to(expected_u54);
     }
 }
