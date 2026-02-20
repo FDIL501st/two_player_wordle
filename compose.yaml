@@ -1,12 +1,3 @@
-# Comments are provided throughout this file to help you get started.
-# If you need more help, visit the Docker Compose reference guide at
-# https://docs.docker.com/go/compose-spec-reference/
-
-# Here the instructions define your application as a service called "server".
-# This service is built from the Dockerfile in the current directory.
-# You can add other services your application may depend on here, such as a
-# database or a cache. For examples, see the Awesome Compose repository:
-# https://github.com/docker/awesome-compose
 services:
   graphql-server:
     container_name: graphql_server
@@ -25,7 +16,7 @@ services:
       mongo-db:
         condition: service_healthy
         restart: true
-
+      
   matchmaking-server:
     container_name: matchmaking_server
     build:
@@ -54,17 +45,17 @@ services:
         restart: true
 
   client:
-    container_name: client_server
+    container_name: client
     build:
       context: ./client
       target: final
     environment:
       NODE_ENV: production
-    network_mode: host
     depends_on:
       - graphql-server
       - matchmaking-server
       - word-server
+      - rabbitmq
 
   mongo-db:
     image: mongo
@@ -73,17 +64,37 @@ services:
     expose:
       - 27017
       # this is the port mongo container uses, as we want our other services to be able to connect to it
+      # but we don't need to expose it to the host machine, we use 'expose' instead of 'ports'
     volumes:
       - mongo_volume:/data/db 
       - mongo_volume:/data/configdb
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
-      # if container can be pinged to, the cmd returns 1
+      # if container can be pinged to, the cmd returns 0 (success code for a terminal command)
       interval: 10s
+      timeout: 10s
       retries: 5
       start_period: 30s
-      timeout: 10s
 
+  rabbitmq:
+    container_name: rabbitmq
+    build: 
+      context: ./rabbitmq
+    ports:
+      - "15672:15672"   # Management/monitor UI
+    expose:
+      - 15674         # STOMP over WebSocket for other services to connect to  
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      # these variables are for the management/monitor UI login
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running", "&&", "rabbitmq-diagnostics", "-q", "check_local_alarms"]
+        # if both checks succeed, the exit code will be 0
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 30s
 
 volumes:
   mongo_volume:

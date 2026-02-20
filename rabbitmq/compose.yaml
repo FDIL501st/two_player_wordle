@@ -1,0 +1,17 @@
+services:
+  rabbitmq:
+    build: .
+    ports:
+      - "15672:15672"   # Management/monitor UI
+      - "15674:15674"   # STOMP over WebSocket
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+      # these variables are for the management/monitor UI login
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_running", "&&", "rabbitmq-diagnostics", "-q", "check_local_alarms"]
+        # if both checks succeed, the exit code will be 0
+      interval: 1m
+      timeout: 30s
+      retries: 5
+      start_period: 30s

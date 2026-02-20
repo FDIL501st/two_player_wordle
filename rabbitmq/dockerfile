@@ -1,0 +1,12 @@
+FROM rabbitmq:management
+
+# mount RabbitMQ configuration file
+RUN --mount=type=bind,source=rabbitmq.conf,target=/etc/rabbitmq/rabbitmq.conf
+
+# Enable necessary plugins
+RUN rabbitmq-plugins enable --offline rabbitmq_web_stomp
+
+# Expose ports:
+# 15672 - Management UI 
+# 15674 - STOMP over WebSocket
+EXPOSE 15672 15674

@@ -2,6 +2,7 @@ use super::{
     errors::{GraphqlServerError, CODE500},
     game_collection,
     models::Game,
+    models::NewTurn,
     MongoClient,
 };
 use juniper::{graphql_object, FieldError, FieldResult, IntoFieldError};
@@ -121,7 +122,8 @@ impl Mutation {
         }
     }
 
-    async fn add_turn(_context: &MongoClient) -> FieldResult<bool> {
+    /// Adds a turn to the round in the database.
+    async fn add_turn(_context: &MongoClient, _round_id: String, _turn: NewTurn) -> FieldResult<bool> {
         Ok(true)
     }
 }
