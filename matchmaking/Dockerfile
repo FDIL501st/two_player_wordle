@@ -35,6 +35,7 @@ WORKDIR /app
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+    # remove bind to Cargo.lock if you don't have a Cargo.lock file (trying to deploy and don't want to run cargo build)
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
@@ -52,18 +53,15 @@ cp ./target/release/$APP_NAME /bin/server
 # reproducability is important, consider using a digest
 # (e.g., alpine@sha256:664888ac9cfd28068e062c991ebcff4b4c7307dc8dd4df9e728bedde5c449d91).
 #FROM alpine:3.18 AS final
-FROM rust:slim AS final
-# use same bas image as build
+FROM debian:stable-slim AS final
+# use same base image as build, debain
 
 # Create a non-privileged user that the app will run under.
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
+RUN useradd \
     --no-create-home \
+    --shell /sbin/nologin \
     --uid "${UID}" \
     appuser
 USER appuser

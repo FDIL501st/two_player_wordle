@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG RUST_VERSION=1.79.0
+ARG RUST_VERSION=1.93.1
 ARG APP_NAME=graphql_server
 
 ################################################################################
@@ -29,7 +29,8 @@ RUN apk add --no-cache clang lld musl-dev git
 # output directory before the cache mounted /app/target is unmounted.
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
-    --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
+    --mount=type=bind,source=Cargo.lock,target=Cargo.lock \     
+    # remove bind to Cargo.lock if you don't have a Cargo.lock file (trying to deploy and don't want to run cargo build)
     --mount=type=cache,target=/app/target/ \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/usr/local/cargo/registry/ \
