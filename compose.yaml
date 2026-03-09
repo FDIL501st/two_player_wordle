@@ -35,7 +35,7 @@ services:
     build:
       context: ./word
     environment:
-      - WORD_PORT=${WORD_PORT}
+      - UVICORN_PORT=${WORD_PORT}
     ports:
       - ${WORD_PORT}:${WORD_PORT}
     # depends on mongo
@@ -61,6 +61,8 @@ services:
     image: mongo
     container_name: ${MONGO_CONTAINER_NAME}
     restart: always
+    ports:
+      - "27017:27017"  # Expose MongoDB to the host machine for development purposes
     expose:
       - 27017
       # this is the port mongo container uses, as we want our other services to be able to connect to it

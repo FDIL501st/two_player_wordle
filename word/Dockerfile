@@ -17,7 +17,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # the port the server will run on
-ENV WORD_PORT=10005
+ENV UVICORN_PORT=10002
 
 WORKDIR /app
 
@@ -48,7 +48,10 @@ USER appuser
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE ${WORD_PORT}
+EXPOSE ${UVICORN_PORT}
+
+# Set environment variables for the application.
+RUN export UVICORN_PORT=${UVICORN_PORT}
 
 # Run the application.
-CMD ["/bin/sh", "-c", "fastapi run main.py --port ${WORD_PORT}"]
+CMD ["fastapi", "run", "main.py"]

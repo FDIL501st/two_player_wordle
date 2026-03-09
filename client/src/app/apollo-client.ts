@@ -1,8 +1,9 @@
 import {ApolloClient, InMemoryCache} from '@apollo/client';
 import {GRAPHQL_URI} from "@/app/constants";
+import { HttpLink } from '@apollo/client';
 
 const client = new ApolloClient({
-  uri: GRAPHQL_URI,
+  link : new HttpLink({uri: GRAPHQL_URI}),
   cache: new InMemoryCache(),
 });
 

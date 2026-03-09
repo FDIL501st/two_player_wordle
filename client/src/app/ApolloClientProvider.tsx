@@ -1,7 +1,7 @@
 'use client'
 
 import {Children} from "@/app/types";
-import {ApolloProvider} from "@apollo/client";
+import {ApolloProvider} from "@apollo/client/react";
 import client from "@/app/apollo-client";
 
 const ApolloClientProvider = ({children}: Children) => {

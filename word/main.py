@@ -1,4 +1,6 @@
 import uvicorn
+import os
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -30,4 +32,5 @@ app.include_router(checks_router)
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app", port=10005, log_level="debug", reload_includes=["*.py"])
+    port = int(os.environ.get("UVICORN_PORT", 10002))
+    uvicorn.run("main:app", port=port, log_level="debug", reload_includes=["*.py"])

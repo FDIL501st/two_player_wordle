@@ -1,7 +1,7 @@
 'use client'
 
 import GamesQueryContext from "@/games/GamesQueryContext";
-import {useQuery} from "@apollo/client";
+import {useQuery} from "@apollo/client/react";
 import {gql} from "@/__generated__";
 import {Children} from "@/app/types";
 

@@ -3,7 +3,7 @@
 import {useEffect, useState} from "react";
 import {Game, NewGameResponse} from "@/(debug)/new_game/types";
 import {create_newGame} from "@/(debug)/new_game/server";
-import {ApolloProvider, useQuery} from "@apollo/client";
+import {ApolloProvider, useQuery} from "@apollo/client/react";
 import client from "@/app/apollo-client";
 import {gql} from "@/__generated__";
 
