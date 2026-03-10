@@ -3,7 +3,8 @@
  */
 
 import {GetGamesQuery, GetGamesQueryResult} from "@/__generated__/graphql";
-import {ApolloError} from "@apollo/client";
+import { ApolloError } from "@apollo/client/v4-migration";
+ import { CombinedGraphQLErrors } from "@apollo/client/errors";
 
 /**
  The type of client/player communicating with the game.
@@ -24,7 +25,7 @@ export type Game = GetGamesQueryResult
 
 export type QueryResult = {
   loading: boolean,
-  error: ApolloError | undefined,
+  error: CombinedGraphQLErrors | undefined,
   data: GetGamesQuery | undefined
 }
 
