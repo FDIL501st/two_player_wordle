@@ -1,5 +1,3 @@
-/* eslint-disable */
-import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -14,28 +12,34 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  U8: { input: unknown; output: unknown; }
+  U16: { input: unknown; output: unknown; }
+  U32: { input: unknown; output: unknown; }
+  U54: { input: unknown; output: unknown; }
 };
 
 /** A game that is currently active/being played. */
 export type Game = {
-  __typename?: 'Game';
+  __typename: 'Game';
   /** The current round that is being played. */
   currentRound: Round;
   /** The id of a Game. Used by the database to identify each document. */
   id: Scalars['String']['output'];
   /** The points of player 1. */
-  p1Points: Scalars['Int']['output'];
+  p1Points: Scalars['U32']['output'];
   /** The points of player 2. */
-  p2Points: Scalars['Int']['output'];
+  p2Points: Scalars['U32']['output'];
   /**
    * The current round number that is currently being made.
    * This value starts at 1.
    */
-  roundNum: Scalars['Int']['output'];
+  roundNum: Scalars['U16']['output'];
 };
 
 export type Mutation = {
-  __typename?: 'Mutation';
+  __typename: 'Mutation';
+  /** Adds a turn to the round in the database. */
+  addTurn: Scalars['Boolean']['output'];
   apiVersion: Scalars['String']['output'];
   /**
    * Creates a new game. Returns true if successful.
@@ -64,8 +68,22 @@ export type Mutation = {
    * Most likely cause is a connection error to database.
    */
   removeGames: Scalars['Boolean']['output'];
-  /** Testing creation of new game by providing a id instead of letting program generate one. */
+  /**
+   * Testing creation of new game by providing a id instead of letting program generate one.
+   * Also testing default arguments.
+   */
   testNewGame: Scalars['String']['output'];
+};
+
+
+export type MutationAddTurnArgs = {
+  roundId: Scalars['String']['input'];
+  turn: NewTurn;
+};
+
+
+export type MutationNewGameArgs = {
+  word?: Scalars['String']['input'];
 };
 
 
@@ -76,6 +94,18 @@ export type MutationRemoveGameArgs = {
 
 export type MutationTestNewGameArgs = {
   id: Scalars['String']['input'];
+  word?: Scalars['String']['input'];
+};
+
+/** A new turn made by some player. Essentially same as ```Turn```, but used for graphql arguments. */
+export type NewTurn = {
+  /** The word guessed by the player. */
+  guess: Scalars['String']['input'];
+  /**
+   * The states of each letter of ```guess```.
+   * Clients need to encode the letter states and the bytes are stored as an ```int```.
+   */
+  letterState: Scalars['U16']['input'];
 };
 
 /** The player type, either player 1 or player 2 */
@@ -87,7 +117,7 @@ export enum Player {
 }
 
 export type Query = {
-  __typename?: 'Query';
+  __typename: 'Query';
   apiVersion: Scalars['String']['output'];
   /** Get a game */
   game: Game;
@@ -105,19 +135,19 @@ export type QueryGameArgs = {
  * A match can have multiple rounds
  */
 export type Round = {
-  __typename?: 'Round';
+  __typename: 'Round';
   /** The current player whose turn it is. */
   currentPlayer: Player;
   /**
    * The current guess number the round is on.
    * Guess number starts at 0.
    */
-  guessNum: Scalars['Int']['output'];
+  guessNum: Scalars['U8']['output'];
   /**
    * The state of all the letters in the round.
    * This is an encoded value, clients are responsible for encoding and decoding the bytes
    */
-  letterpoolState: Scalars['Int']['output'];
+  letterpoolState: Scalars['U54']['output'];
   /** The target word that players are trying to guess for the round. */
   targetWord: Scalars['String']['output'];
   /**
@@ -130,34 +160,17 @@ export type Round = {
 
 /** A turn turn made by some player. */
 export type Turn = {
-  __typename?: 'Turn';
+  __typename: 'Turn';
   /** The word guessed by the player. */
   guessedWord: Scalars['String']['output'];
   /**
    * the states of each letter of the word.
    * Clients need to decode this ```int``` to actually read the state of each letter.
    */
-  letterState: Scalars['Int']['output'];
+  letterState: Scalars['U16']['output'];
 };
 
 export type GetAllGamesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllGamesQuery = { __typename?: 'Query', games: Array<{ __typename?: 'Game', id: string }> };
-
-export type Get_GameQueryVariables = Exact<{
-  id: Scalars['String']['input'];
-}>;
-
-export type Get_GameQueryResult = { __typename?: 'Game', id: string, p1Points: number, p2Points: number, roundNum: number, currentRound: { __typename?: 'Round', letterpoolState: number, currentPlayer: Player, guessNum: number, turns: Array<{ __typename?: 'Turn', guessedWord: string, letterState: number }> } }
-export type Get_GameQuery = { __typename?: 'Query', game: Get_GameQueryResult};
-
-export type GetGamesQueryVariables = Exact<{ [key: string]: never; }>;
-
-export type  GetGamesQueryResult = { __typename?: 'Game', id: string, p1Points: number, p2Points: number, roundNum: number }
-export type GetGamesQuery = { __typename?: 'Query', games: Array<GetGamesQueryResult> };
-
-
-export const GetAllGamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllGames"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<GetAllGamesQuery, GetAllGamesQueryVariables>;
-export const Get_GameDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GET_GAME"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"game"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"p1Points"}},{"kind":"Field","name":{"kind":"Name","value":"p2Points"}},{"kind":"Field","name":{"kind":"Name","value":"roundNum"}},{"kind":"Field","name":{"kind":"Name","value":"currentRound"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"letterpoolState"}},{"kind":"Field","name":{"kind":"Name","value":"currentPlayer"}},{"kind":"Field","name":{"kind":"Name","value":"guessNum"}},{"kind":"Field","name":{"kind":"Name","value":"turns"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"guessedWord"}},{"kind":"Field","name":{"kind":"Name","value":"letterState"}}]}}]}}]}}]}}]} as unknown as DocumentNode<Get_GameQuery, Get_GameQueryVariables>;
-export const GetGamesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetGames"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"games"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"p1Points"}},{"kind":"Field","name":{"kind":"Name","value":"p2Points"}},{"kind":"Field","name":{"kind":"Name","value":"roundNum"}}]}}]}}]} as unknown as DocumentNode<GetGamesQuery, GetGamesQueryVariables>;
+export type GetAllGamesQuery = { games: Array<{ __typename: 'Game', id: string }> };
