@@ -2,9 +2,9 @@
  Defines types used within the game
  */
 
-import {GetGamesQuery, GetGamesQueryResult} from "@/__generated__/graphql";
+import {GetAllGamesQuery, GetAllGamesQueryVariables} from "@/__generated__/graphql";
 import { ApolloError } from "@apollo/client/v4-migration";
- import { CombinedGraphQLErrors } from "@apollo/client/errors";
+import { ErrorLike } from "@apollo/client";
 
 /**
  The type of client/player communicating with the game.
@@ -21,12 +21,12 @@ export enum Client {
  */
 export type NewGameResponse = {game_id: string, player_type: Client}
 
-export type Game = GetGamesQueryResult
+export type Game = GetAllGamesQuery
 
 export type QueryResult = {
   loading: boolean,
-  error: CombinedGraphQLErrors | undefined,
-  data: GetGamesQuery | undefined
+  error: ErrorLike | undefined,
+  data: GetAllGamesQuery | undefined
 }
 
 /**

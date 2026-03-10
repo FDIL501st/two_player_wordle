@@ -1,11 +1,12 @@
 'use client'
 
 import GamesQueryContext from "@/games/GamesQueryContext";
+import { gql, TypedDocumentNode } from "@apollo/client";
 import {useQuery} from "@apollo/client/react";
-import {gql} from "@/__generated__/graphql";
+import {GetAllGamesQuery, GetAllGamesQueryVariables} from "@/__generated__/graphql";
 import {Children} from "@/app/types";
 
-const GET_GAMES = gql(/* GRAPHQL */ `
+const GET_GAMES: TypedDocumentNode<GetAllGamesQuery, GetAllGamesQueryVariables> = gql(/* GRAPHQL */ `
   query GetGames {
     games {
       id,
