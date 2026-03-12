@@ -171,6 +171,17 @@ export type Turn = {
 };
 
 export type GetAllGamesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
 export type GetAllGamesQuery = { games: Array<{ __typename: 'Game', id: string }> };
+
+export type GetGameQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+export type GetGameQuery = { game: { __typename: 'Game', id: string, p1Points: unknown, p2Points: unknown, roundNum: unknown, currentRound: { __typename: 'Round', targetWord: string, letterpoolState: unknown, currentPlayer: Player, guessNum: unknown, turns: Array<{ __typename: 'Turn', guessedWord: string, letterState: unknown }> } } };
+
+export type GetRoundQueryVariables = Exact<{
+  id: Scalars['String']['input'];
+}>;
+export type GetRoundQuery = { game: { __typename: 'Game', p1Points: unknown, p2Points: unknown, roundNum: unknown, currentRound: { __typename: 'Round', targetWord: string, letterpoolState: unknown, currentPlayer: Player, guessNum: unknown, turns: Array<{ __typename: 'Turn', guessedWord: string, letterState: unknown }> } } };
+
+export type GetGamesQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetGamesQuery = { games: Array<{ __typename: 'Game', id: string, p1Points: unknown, p2Points: unknown, roundNum: unknown }> };

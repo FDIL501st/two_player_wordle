@@ -3,10 +3,13 @@
 import GamesQueryContext from "@/games/GamesQueryContext";
 import { gql, TypedDocumentNode } from "@apollo/client";
 import {useQuery} from "@apollo/client/react";
-import {GetAllGamesQuery, GetAllGamesQueryVariables} from "@/__generated__/graphql";
+import { GetGamesQuery, GetGamesQueryVariables } from "@/__generated__/graphql";
 import {Children} from "@/app/types";
 
-const GET_GAMES: TypedDocumentNode<GetAllGamesQuery, GetAllGamesQueryVariables> = gql(/* GRAPHQL */ `
+
+// TODO: this will not work at the moment as the query being called only returns game id, nothing else
+// Come back to this once the graphql server has implemented the query to return all necessary game info for the games list page
+const GET_GAMES: TypedDocumentNode<GetGamesQuery, GetGamesQueryVariables> = gql(/* GRAPHQL */ `
   query GetGames {
     games {
       id,

@@ -2,8 +2,7 @@
  Defines types used within the game
  */
 
-import {GetAllGamesQuery, GetAllGamesQueryVariables} from "@/__generated__/graphql";
-import { ApolloError } from "@apollo/client/v4-migration";
+import { GetGamesQuery, GetGameQuery } from "@/__generated__/graphql";
 import { ErrorLike } from "@apollo/client";
 
 /**
@@ -21,12 +20,13 @@ export enum Client {
  */
 export type NewGameResponse = {game_id: string, player_type: Client}
 
-export type Game = GetAllGamesQuery
+export type Game = GetGamesQuery['games'][0]; 
+// get me the type of element 0 of games key, which basically is the element of a single element 
 
-export type QueryResult = {
+export type GetGamesQueryResult = {
   loading: boolean,
   error: ErrorLike | undefined,
-  data: GetAllGamesQuery | undefined
+  data: GetGamesQuery | undefined
 }
 
 /**

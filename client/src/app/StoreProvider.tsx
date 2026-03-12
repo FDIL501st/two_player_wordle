@@ -6,7 +6,10 @@ import { makeStore, AppStore } from '@/lib/store'
 import {Children} from "@/app/types";
 
 export default function StoreProvider({children}: Children) {
-  const storeRef = useRef<AppStore>()
+  const storeRef = useRef<AppStore>(null)   
+  // refs are for variables that we don't want reset everyrender
+  // like background values that never actually appear on screen
+  
   if (!storeRef.current) {
     // Create the store instance the first time this renders
     storeRef.current = makeStore()

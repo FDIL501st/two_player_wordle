@@ -1,7 +1,7 @@
 'use client'
 
 import QuitButton from "@/game/Components/QuitButton";
-import {gql} from "@/__generated__";
+import { gql, TypedDocumentNode } from "@apollo/client";
 import {KeyboardEvent, useEffect} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
@@ -11,9 +11,11 @@ import {Client} from "@/(game)/types";
 import {WORD_INDEX_URL} from "@/app/constants";
 import {selectCurrentPlayer, selectTargetWord} from "@/lib/features/round/roundSlice";
 import {decode_guess_comparison, encode_guess_comparison, LetterState} from "@/app/encoding";
+import { GetGameQuery, GetGameQueryVariables, GetRoundQuery, GetRoundQueryVariables } from "@/__generated__/graphql";
 
-const GET_GAME = gql(/* GRAPHQL */`
-query GET_GAME($id: String!) {
+
+const GET_GAME: TypedDocumentNode<GetGameQuery, GetGameQueryVariables> = gql(/* GRAPHQL */`
+query GetGame($id: String!) {
   game(id: $id) {
     id
     p1Points
@@ -33,9 +35,9 @@ query GET_GAME($id: String!) {
 }
 `)
 
-// same as GET_GAME
-const GET_ROUND = gql(/* GRAPHQL */`
-query GET_GAME($id: String!) {
+// same as GET_GAME except no id, so query result won't try to get cache value
+const GET_ROUND: TypedDocumentNode<GetRoundQuery, GetRoundQueryVariables> = gql(/* GRAPHQL */`
+query GetRound($id: String!) {
   game(id: $id) {
     p1Points
     p2Points

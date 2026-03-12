@@ -1,12 +1,12 @@
 import { createContext } from 'react';
-import {QueryResult} from "@/(game)/types";
+import { GetGamesQueryResult } from "@/(game)/types";
 
 
-const initialResult: QueryResult = {
+const initialResult: GetGamesQueryResult = {
   loading: true,
   error: undefined,
-  data: undefined
-}
+  data: undefined,
+};
 
-const GamesQueryContext = createContext<QueryResult>(initialResult)
+const GamesQueryContext = createContext<GetGamesQueryResult>(initialResult);
 export default GamesQueryContext

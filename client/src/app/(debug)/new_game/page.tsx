@@ -5,9 +5,10 @@ import {Game, NewGameResponse} from "@/(debug)/new_game/types";
 import {create_newGame} from "@/(debug)/new_game/server";
 import {ApolloProvider, useQuery} from "@apollo/client/react";
 import client from "@/app/apollo-client";
-import {gql} from "@/__generated__";
+import { gql, TypedDocumentNode } from "@apollo/client";
+import { GetAllGamesQuery, GetAllGamesQueryVariables } from "@/__generated__/graphql";
 
-const GET_ALL_GAMES = gql(/* GRAPHQL */ `
+const GET_ALL_GAMES: TypedDocumentNode<GetAllGamesQuery, GetAllGamesQueryVariables> = gql(/* GRAPHQL */ `
   query GetAllGames {
     games {
       id
