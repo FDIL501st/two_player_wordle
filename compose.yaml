@@ -35,7 +35,9 @@ services:
     build:
       context: ./word
     environment:
-      - UVICORN_PORT=${WORD_PORT}
+      - WORD_PORT=${WORD_PORT}
+      - MONGO_CONNECTION_URL=${MONGO_CONNECTION_URL}  
+      - USE_COMPOSE=true
     ports:
       - ${WORD_PORT}:${WORD_PORT}
     # depends on mongo

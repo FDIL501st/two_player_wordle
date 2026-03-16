@@ -6,7 +6,7 @@
 
 # Want to help us make this template better? Share your feedback here: https://forms.gle/ybq9Krt8jtBL3iCk7
 
-ARG PYTHON_VERSION=3.12.0
+ARG PYTHON_VERSION=3.14
 FROM python:${PYTHON_VERSION}-slim AS base
 
 # Prevents Python from writing pyc files.
@@ -17,7 +17,7 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # the port the server will run on
-ENV UVICORN_PORT=10002
+ENV WORD_PORT=10002
 
 WORKDIR /app
 
@@ -48,10 +48,10 @@ USER appuser
 COPY . .
 
 # Expose the port that the application listens on.
-EXPOSE ${UVICORN_PORT}
+EXPOSE ${WORD_PORT}
 
-# Set environment variables for the application.
-RUN export UVICORN_PORT=${UVICORN_PORT}
 
 # Run the application.
-CMD ["fastapi", "run", "main.py"]
+CMD ["sh", "-c", "fastapi run main.py --host 0.0.0.0 --port $WORD_PORT"]
+
+# using "sh -c" as need need variable expansion for $WORD_PORT
