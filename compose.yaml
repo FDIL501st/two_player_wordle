@@ -23,7 +23,7 @@ services:
       context: ./matchmaking
       target: final
     ports:
-      - ${MATCHMAKING_PORT}:${MATCHMAKING_PORT}
+      - ${MATCHMAKING_PORT}:${MATCHMAKING_PORT}   # for development purposes we forward ports
     environment:
       - ROCKET_PORT=${MATCHMAKING_PORT}
     # depends on graphql-server
@@ -39,7 +39,7 @@ services:
       - MONGO_CONNECTION_URL=${MONGO_CONNECTION_URL}  
       - USE_COMPOSE=true
     ports:
-      - ${WORD_PORT}:${WORD_PORT}
+      - ${WORD_PORT}:${WORD_PORT}     # for development purposes we forward ports
     # depends on mongo
     depends_on:
       mongo-db:
@@ -51,6 +51,8 @@ services:
     build:
       context: ./client
       target: final
+    ports:
+      - 3000:3000
     environment:
       NODE_ENV: production
     depends_on:
@@ -60,25 +62,43 @@ services:
       - rabbitmq
 
   mongo-db:
-    image: mongo
+    image: mongo:7.0
     container_name: ${MONGO_CONTAINER_NAME}
-    restart: always
-    ports:
-      - "27017:27017"  # Expose MongoDB to the host machine for development purposes
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
+    restart: unless-stopped
+    # ports:
+    #   - "27017:27017"  # Expose MongoDB to the host machine for development purposes
     expose:
       - 27017
       # this is the port mongo container uses, as we want our other services to be able to connect to it
       # but we don't need to expose it to the host machine, we use 'expose' instead of 'ports'
     volumes:
       - mongo_volume:/data/db 
-      - mongo_volume:/data/configdb
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping').ok"]
       # if container can be pinged to, the cmd returns 0 (success code for a terminal command)
-      interval: 10s
-      timeout: 10s
+      interval: 1m
+      timeout: 30s
       retries: 5
-      start_period: 30s
+      start_period: 1m30s
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_ROOT_USERNAME}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_ROOT_PASSWORD}
+      ME_CONFIG_MONGODB_SERVER: mongo-db
+      ME_CONFIG_BASICAUTH_USERNAME: ME_ADMIN
+      ME_CONFIG_BASICAUTH_PASSWORD: ME_PASSWORD
+     # these variables are for the basic auth login to mongo-express, not to be confused
+    ports:
+      - "8081:8081"
+    depends_on:
+      - mongo-db
 
   rabbitmq:
     container_name: rabbitmq
@@ -98,7 +118,7 @@ services:
       interval: 1m
       timeout: 30s
       retries: 5
-      start_period: 30s
+      start_period: 1m
 
 volumes:
   mongo_volume:

@@ -16,6 +16,7 @@ class _Settings:
         if environ.get("USE_COMPOSE"):
             self.DB_HOST: str = environ.get("MONGO_CONNECTION_URL", "")
             print("Using docker compose, DB_HOST is set to MONGO_CONNECTION_URL env variable.")
+            print(f"DB_HOST: {self.DB_HOST}")
         else:
             print("Using .env file")
             # load variables from .env
