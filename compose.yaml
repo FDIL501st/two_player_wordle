@@ -106,8 +106,11 @@ services:
       context: ./rabbitmq
     ports:
       - "15672:15672"   # Management/monitor UI
+      - "15674:15674"   # STOMP over WebSocket for development purposes 
+      - "61613:61613"   # STOMP over TCP for development purposes
     expose:
-      - 15674         # STOMP over WebSocket for other services to connect to  
+      - 15674         # STOMP over WebSocket for other services to connect to 
+      - 61613         # STOMP over TCP for other services to connect to 
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -118,7 +121,7 @@ services:
       interval: 1m
       timeout: 30s
       retries: 5
-      start_period: 1m
+      start_period: 30s
 
 volumes:
   mongo_volume:

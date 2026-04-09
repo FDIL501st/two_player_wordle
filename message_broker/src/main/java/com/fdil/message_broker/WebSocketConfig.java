@@ -28,22 +28,25 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             password = "guest";
         }
         if (host == null) {
-            host = "rabbitmq";
+            host = "localhost";
         }
 
+        System.out.println("Using RabbitMQ with login: " + login + ", password: " + password + ", host: " + host);
+
         // the topics rabbitmq will handle
-        config.enableStompBrokerRelay("/topic/**")
+        config.enableStompBrokerRelay("/topic")
                 .setClientLogin(login)
                 .setClientPasscode(password)
                 .setRelayHost(host)
-                .setRelayPort(15674);
+                .setRelayPort(61613);
     }
 
     @Override
     public void registerStompEndpoints(@NonNull StompEndpointRegistry registry) {
         // url endpoint to when communicating with this server with STOMP
-        registry.addEndpoint("/mb-ws");
+        registry.addEndpoint("/mb-ws")
         // message_broker-websocket
+                .setAllowedOrigins("http://localhost:3000");    // allow CORS for local development, adjust as needed for production
     }
 
 }
