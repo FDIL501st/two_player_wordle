@@ -1,11 +1,12 @@
 'use client';
 
-import { Client, IMessage } from "@stomp/stompjs";
+import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
 import { BSON } from "bson";
 import {useEffect, useState, useRef} from "react";
 
 const PubSub = () => {
     const clientPubRef = useRef<Client | null>(null);
+    const SubscriptionRef = useRef<StompSubscription | null>(null);
     const [inputMessage, setInputMessage] = useState("");
     const [message, setMessage] = useState({});
 
@@ -36,9 +37,7 @@ const PubSub = () => {
         const data = BSON.deserialize(message.binaryBody);
         setMessage(data);
     }
-
-
-
+    
 
     useEffect(() => {
         const clientPub = new Client({
@@ -70,7 +69,9 @@ const PubSub = () => {
                 passcode: "guest",
             },
             onConnect: () => {
-                clientSub.subscribe("/topic/chat", handleMessage);
+                console.log("Subscriber connected");
+                const subscription = clientSub.subscribe("/topic/chat", handleMessage);
+                SubscriptionRef.current = subscription;
             },
             debug: (str) => { 
                 console.log("STOMP Sub Debug:", str) 
@@ -82,9 +83,19 @@ const PubSub = () => {
                 console.error("STOMP Sub error:", frame);
             },
         });
+        // clientSub.subscribe("/topic/chat", handleMessage);
+        // moving it here failed, it seems that is because clientSub not yet created within UseEffect
+
         clientSub.activate()
 
         return () => {
+            // if (SubscriptionRef.current) {
+            //     SubscriptionRef.current.unsubscribe();
+            // }
+            // No need to unsubscribe, as the client will be deactivated and all subscriptions will be cleaned up
+
+            // only need to unsubscribe if we want to stop receiving messages but keep the connection/client alive for other purposes. 
+            // IFor example, changing the subscription topic or callback without disconnecting the client.
             clientSub.deactivate()
             clientPub.deactivate()
         }
