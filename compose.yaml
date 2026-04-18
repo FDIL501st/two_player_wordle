@@ -107,8 +107,10 @@ services:
     ports:
       - "15672:15672"   # Management/monitor UI
       - "15674:15674"   # STOMP over WebSocket for development purposes 
+      - "15675:15675"   # MQTT over WebSocket for development purposes
       - "61613:61613"   # STOMP over TCP for development purposes
     expose:
+      - 15675         # MQTT over WebSocket for other services to connect to
       - 15674         # STOMP over WebSocket for other services to connect to 
       - 61613         # STOMP over TCP for other services to connect to 
     environment:

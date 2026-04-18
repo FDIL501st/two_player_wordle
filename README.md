@@ -14,7 +14,13 @@ You will need a .env file in the parent directory as [compose.yaml](compose.yaml
 **MONGO_CONTAINER_NAME** also doesn't matter as it simply affects the container name of the docker container that is run.
 
 **GRAPHQL_PORT** is the port number that the graphql server will run on. You should choose a port that isn't already in use.
+**MATCHMAKING_PORT** is the port number that the matchmaking server will run on. You should choose a port that isn't already in use.
+**WORD_PORT** is the port number that the word server will run on. You should choose a port that isn't already in use.
+**CLIENT_PORT** is the port number that the client server will run on. You should choose a port that isn't already in use.
 
+You can copy the example.env for the PORT variables if they are already free.
+
+**VALKEY_PASSWORD** is the password used to connect to the valkey service. Doesn't matter too much, just set it to something.
 
 ## Running without docker compose
 

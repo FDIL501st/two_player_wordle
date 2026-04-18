@@ -4,7 +4,7 @@ import { Client, IMessage, StompSubscription } from "@stomp/stompjs";
 import { BSON } from "bson";
 import {useEffect, useState, useRef} from "react";
 
-const PubSub = () => {
+const STOMP = () => {
     const clientPubRef = useRef<Client | null>(null);
     const SubscriptionRef = useRef<StompSubscription | null>(null);
     const [inputMessage, setInputMessage] = useState("");
@@ -113,6 +113,6 @@ const PubSub = () => {
 }
 
 
-export default PubSub;
+export default STOMP;
 
 
