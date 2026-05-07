@@ -33,6 +33,13 @@ const MQTT = () => {
 
             // also subscribe to the topic to receive messages after connection is established
             client.subscribe('bson/test', { qos: 0 }, (err) => {
+                // qos 0 means "at most once" delivery
+                // we don't care about messge loss in this debug page, and it simplifies the implementation
+                // if we want to ensure message delivery, we can use qos 1,
+                // which then means we also need to send a key in the payload to identify the message, so that the server can acknowledge the correct message
+                // and ignore duplicate messages if the client retries due to not receiving the ack in time
+
+                // or just go for qos 2, which has higher overhead and slower but ensures exactly once delivery, so we don't need to worry about duplicates at all
                 if (err) {
                     console.error('subscribe error', err)
                 } else {

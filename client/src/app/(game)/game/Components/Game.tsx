@@ -1,8 +1,10 @@
 'use client'
 
+import mqtt from "mqtt";
+import { serialize, deserialize } from "bson";
 import QuitButton from "@/game/Components/QuitButton";
 import { gql, TypedDocumentNode } from "@apollo/client";
-import {KeyboardEvent, useEffect} from "react";
+import {KeyboardEvent, useEffect, useRef} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
 import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
@@ -69,6 +71,65 @@ const Game = () => {
   // the size of word being guessed,
   // can be determined by size of word to guess (another server that figures this out)
   const wordSize: number = 5
+
+
+  // MQTT connection clinet
+  const mqttclientRef = useRef<mqtt.MqttClient | null>(null)
+
+  // initialize MQTT connection in useEffect, 
+  // so that connection is only made once when component mounts, 
+  // and properly closed when component unmounts
+  useEffect(() => {
+    const mqttclient = mqtt.connect("ws://localhost:15675/ws", {
+      username: "guest",
+      password: "guest",
+      // RabbitMQ requires a clientId
+      clientId: "browser-" + Math.random().toString(16).slice(2),
+      reconnectPeriod: 1000, // try to reconnect every 1 second
+      connectTimeout: 30000, // 30 seconds timeout for initial connection
+    })
+    mqttclientRef.current = mqttclient
+
+    // TODO: Fix logic below, just log messages, don't do anything now
+
+    const topic = "bson/test"
+
+    mqttclient.on("connect", () => {
+      console.log("connected to MQTT broker");
+
+      // also subscribe to the topic to receive messages after connection is established
+      mqttclient.subscribe(topic, { qos: 0 }, (err) => {
+        // qos 0 means "at most once" delivery
+        // we don't care about messge loss in this debug page, and it simplifies the implementation
+        // if we want to ensure message delivery, we can use qos 1,
+        // which then means we also need to send a key in the payload to identify the message, so that the server can acknowledge the correct message
+        // and ignore duplicate messages if the client retries due to not receiving the ack in time
+
+        // or just go for qos 2, which has higher overhead and slower but ensures exactly once delivery, so we don't need to worry about duplicates at all
+        if (err) {
+          console.error("subscribe error", err);
+        } else {
+          console.log(`subscribed to ${topic}`);
+        }
+      });
+    })
+
+    mqttclient.on("error", (err) => {
+      console.error("connection error", err);
+    })
+
+    mqttclient.on("message", (topic, payload) => {
+      // payload is a Buffer, convert to Uint8Array for BSON deserialization
+      const data = deserialize(new Uint8Array(payload));
+      console.log(`Received message on topic "${topic}":`, data);
+
+    })
+
+    return () => {
+      mqttclient.end();
+    }
+
+    }, [])
 
   useEffect(() => {
     // update grid per turn
