@@ -58,6 +58,15 @@ query GetRound($id: String!) {
 }
 `)
 
+/**
+ * The logic of the Game. 
+ * This means handling keyboard input, updating internal state with guesses made, 
+ * communicating with the server to update the game state in the database 
+ * and get updates on the opponent's guesses through mqtt.
+ * 
+ * Contins the components of what the game board has.
+ * This includes the guess grid and the quit button.
+ */
 const Game = () => {
   // GameController makes sure gameID is not undefined when this component is used
   const gameID = useAppSelector(selectGameID)
@@ -80,6 +89,12 @@ const Game = () => {
   // so that connection is only made once when component mounts, 
   // and properly closed when component unmounts
   useEffect(() => {
+    // expect gameID to be defined, since GameController should ensure that before rendering Game component
+    if (!gameID) {
+      console.error("gameID should be defined at this point, but is not. This is an unexpected state and likely indicates a bug in the code. Please investigate.")
+      return
+    }
+
     const mqttclient = mqtt.connect("ws://localhost:15675/ws", {
       username: "guest",
       password: "guest",
@@ -92,44 +107,48 @@ const Game = () => {
 
     // TODO: Fix logic below, just log messages, don't do anything now
 
-    const topic = "bson/test"
+    const topic = `game/${gameID}/guesses`
 
     mqttclient.on("connect", () => {
-      console.log("connected to MQTT broker");
+      console.log("connected to MQTT broker")
 
       // also subscribe to the topic to receive messages after connection is established
-      mqttclient.subscribe(topic, { qos: 0 }, (err) => {
-        // qos 0 means "at most once" delivery
-        // we don't care about messge loss in this debug page, and it simplifies the implementation
-        // if we want to ensure message delivery, we can use qos 1,
-        // which then means we also need to send a key in the payload to identify the message, so that the server can acknowledge the correct message
-        // and ignore duplicate messages if the client retries due to not receiving the ack in time
-
-        // or just go for qos 2, which has higher overhead and slower but ensures exactly once delivery, so we don't need to worry about duplicates at all
+      mqttclient.subscribe(topic, { qos: 1 }, (err) => {
+        // qos 1 means we can get duplicate messages, but won't lose messages.
+        // to counter duplicate messages, we add round number, so client can recognize if message is duplicate or not 
         if (err) {
-          console.error("subscribe error", err);
+          console.error("subscribe error", err)
         } else {
-          console.log(`subscribed to ${topic}`);
+          console.log(`subscribed to ${topic}`)
         }
-      });
+      })
     })
 
     mqttclient.on("error", (err) => {
-      console.error("connection error", err);
+      console.error("connection error", err)
     })
 
     mqttclient.on("message", (topic, payload) => {
       // payload is a Buffer, convert to Uint8Array for BSON deserialization
-      const data = deserialize(new Uint8Array(payload));
-      console.log(`Received message on topic "${topic}":`, data);
+      const data = deserialize(new Uint8Array(payload))
+      console.log(`Received message on topic "${topic}":`, data)
+
+      // we expeect data to have following fields:
+      // guessedWord: string
+      // letterState: LetterState[]
+      // roundNum: number
+      // player: Client
+
+      // TODO: use this data to update the game state in redux, which will then update the UI accordingly
+      // need some sort of redux for turns     
 
     })
 
     return () => {
-      mqttclient.end();
+      mqttclient.end()
     }
 
-    }, [])
+    }, [gameID]) // only re-run effect if gameID changes, which shouldn't happen since gameID is fixed for a game session
 
   useEffect(() => {
     // update grid per turn
