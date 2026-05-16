@@ -77,7 +77,7 @@ export function encode_guess_comparison(guess_word: string, target_word: string)
 }
 
 export function decode_guess_comparison(encoded_number: number): LetterState[] {
-  let letter_states: LetterState[] = []
+  const letter_states: LetterState[] = []
 
   // make a copy to do bitwise operations with
   let encoded = encoded_number

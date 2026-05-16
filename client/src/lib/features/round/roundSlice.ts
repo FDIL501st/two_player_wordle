@@ -14,6 +14,7 @@ export interface RoundState {
 
   // The current guess number the round is on.
   // Guess number starts at 0.
+  // Should be equal to the length of turns array, since each turn corresponds to a guess
   guess_num: number
 
   // The current player whose turn it is.
@@ -25,7 +26,7 @@ export interface RoundState {
 
 export interface Turn {
   // The word guessed by the player.
-  guessed_word: String,
+  guessed_word: string,
 
   // the states of each letter of the word.
   letter_state: LetterState[]
@@ -50,12 +51,12 @@ export const roundSlice = createSlice({
   initialState: initialRoundState,
   reducers: {
     // clears round value to initial state, which is for when not in a round
-    clear_round: (state) => {
+    clear_round: () => {
       return initialRoundState
     },
 
     // starts a new round
-    new_round: (state, action: PayloadAction<{target_word: string, start_player: Player}>) => {
+    new_round: (_, action: PayloadAction<{target_word: string, start_player: Player}>) => {
       return {
         turns: [] as Turn[],
         guess_num: 0,
@@ -98,5 +99,7 @@ export const {
 
 export const selectTargetWord = (state: RootState) => state.round.target_word
 export const selectCurrentPlayer = (state: RootState) => state.round.current_player
+export const selectGuessNum = (state: RootState) => state.round.guess_num // used to determine which row on grid a guess should go
+export const selectLetterpoolState = (state: RootState) => state.round.letterpool_state
 
 export default roundSlice.reducer

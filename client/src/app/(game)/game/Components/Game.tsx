@@ -4,11 +4,12 @@ import mqtt from "mqtt";
 import { serialize, deserialize } from "bson";
 import QuitButton from "@/game/Components/QuitButton";
 import { gql, TypedDocumentNode } from "@apollo/client";
-import {KeyboardEvent, useEffect, useRef} from "react";
+import {KeyboardEvent, useEffect, useRef, useState} from "react";
 import GuessGrid from "@/game/Components/GuessGrid";
 import {useAppDispatch, useAppSelector} from "@/lib/hooks";
 import {add, AddAction, backspace, selectGuess} from "@/lib/features/guess/guessSlice";
-import {selectClientType, selectGameID, switch_player} from "@/lib/features/gameSession/gameSessionSlice";
+import {selectClientType, selectGameID} from "@/lib/features/gameSession/gameSessionSlice";
+import { next_turn } from "@/lib/features/round/roundSlice";
 import {Client} from "@/(game)/types";
 import {WORD_INDEX_URL} from "@/app/constants";
 import {selectCurrentPlayer, selectTargetWord} from "@/lib/features/round/roundSlice";
@@ -64,7 +65,7 @@ query GetRound($id: String!) {
  * communicating with the server to update the game state in the database 
  * and get updates on the opponent's guesses through mqtt.
  * 
- * Contins the components of what the game board has.
+ * Contains the components of what the game board has.
  * This includes the guess grid and the quit button.
  */
 const Game = () => {
@@ -76,13 +77,18 @@ const Game = () => {
   const target_word = useAppSelector(selectTargetWord)
   const guess: string = useAppSelector(selectGuess)
   const dispatch = useAppDispatch()
+
+  const [messageID, setmessageID] = useState(0); // used for checking duplicate messages from mqtt, 
+  // since qos 1 can lead to duplicate messages, we add messageID to each mqtt message, 
+  // and if messageID is less than or equal to current messageID, 
+  // then we know it's a duplicate message and ignore it. We increment messageID for each new guess made.
   
   // the size of word being guessed,
   // can be determined by size of word to guess (another server that figures this out)
   const wordSize: number = 5
 
 
-  // MQTT connection clinet
+  // MQTT connection client
   const mqttclientRef = useRef<mqtt.MqttClient | null>(null)
 
   // initialize MQTT connection in useEffect, 
@@ -105,8 +111,6 @@ const Game = () => {
     })
     mqttclientRef.current = mqttclient
 
-    // TODO: Fix logic below, just log messages, don't do anything now
-
     const topic = `game/${gameID}/guesses`
 
     mqttclient.on("connect", () => {
@@ -128,22 +132,6 @@ const Game = () => {
       console.error("connection error", err)
     })
 
-    mqttclient.on("message", (topic, payload) => {
-      // payload is a Buffer, convert to Uint8Array for BSON deserialization
-      const data = deserialize(new Uint8Array(payload))
-      console.log(`Received message on topic "${topic}":`, data)
-
-      // we expeect data to have following fields:
-      // guessedWord: string
-      // letterState: LetterState[]
-      // roundNum: number
-      // player: Client
-
-      // TODO: use this data to update the game state in redux, which will then update the UI accordingly
-      // need some sort of redux for turns     
-
-    })
-
     return () => {
       mqttclient.end()
     }
@@ -151,15 +139,68 @@ const Game = () => {
     }, [gameID]) // only re-run effect if gameID changes, which shouldn't happen since gameID is fixed for a game session
 
   useEffect(() => {
+    const mqttclient = mqttclientRef.current
+    if (!mqttclient) {
+      // not sure how to deal with this as possible we might miss first message?
+      // unless we update messageID before sending first message (within the publish function)
+      return
+    }
+
+    mqttclient.on("message", (topic, payload) => {
+      // payload is a Buffer, convert to Uint8Array for BSON deserialization
+      const data = deserialize(new Uint8Array(payload));
+      console.log(`Received message on topic "${topic}":`, data);
+
+      // we expect data to have following fields:
+      // guessedWord: string
+      // letterState: LetterState[]
+      // letterpoolState: LetterState[]
+      // messageID: number
+      // player: Client
+
+      // before updating, check if messageID is less than or equal to current messageID, 
+      // if so, ignore the message since it's a duplicate.
+      if (data.messageID <= messageID) {
+        return
+      }
+      next_turn({
+        skip_guess: false,
+        turn: {
+          guessed_word: data.guessedWord,
+          letter_state: data.letterState,
+        },
+        letterpool_state: data.letterpoolState,
+      })
+      // means we need to send updated letterpool_state with publish?
+      // updated letterpool_state can be calculated in client
+      // seems no function to do that, maybe in rust graphql server?
+
+      // ok, so updating letterpool_state is a bit tricky, and implemented within the graphql server.
+      // its tricky as it requires double-checking guess letter state, for duplicate letters in guess.
+
+      // so flow of updating letterpool_state is like this:
+      // 1. player makes a guess, and client sends guess to graphql_server through db mutation
+      // 2. graphql_server updates letterpool_state based on guess, and saves it in db
+      // 3. graphql_server mutation sends updated letterpool_state back to client, which uses that to send a mqtt message to notify other player of new guess, and also includes updated letterpool_state in mqtt message
+      // 4. other player's client receives mqtt message, and updates letterpool_state in redux based on the letterpool_state received in mqtt message
+
+      // client -> mutation to graphql_server -> client (with updated letterpool_state) -> mqtt message to other client (with updated letterpool_state) -> everyone updates redux due to subscription to mqtt topic
+    })
+
+  }, [messageID]) // re-run effect if messageID changes, which basically happens every turn
+
+  useEffect(() => {
     // update grid per turn
 
     // wait for some sort of http request which is blocked until db updates
     // when http GET request returns, update redux and grid and start next turn
+
+    // update redux + new turn done in mqtt subscribe
   })
 
   // function to run when making a guess
   async function make_guess(word: string) {
-	  // first check if its a valid word
+	  // first check if it's a valid word
     const url_path: string = `/check/isValid?word=${word}`
     const isValid = await fetch(WORD_INDEX_URL + url_path)
 
@@ -189,7 +230,7 @@ const Game = () => {
     return 0
   }
   async function pressEnter() {
-    const status = await make_guess(guess).catch((_): -1 => {
+    const status = await make_guess(guess).catch((): -1 => {
       return -1
     })
     if (status == -1) {
@@ -198,7 +239,7 @@ const Game = () => {
     if (status === 1) {
       // Notify user they input an invalid word
     }
-    // know for sure that we written to db, now we need to
+    // know for sure that we have written to db, now we need to
 
     if (status === 0) {
       // http request sending a signal of updated db?
