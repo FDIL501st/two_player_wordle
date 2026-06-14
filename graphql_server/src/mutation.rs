@@ -1,3 +1,5 @@
+use crate::models::scalars::U54;
+
 use super::{
     errors::{GraphqlServerError, CODE500},
     game_collection,
@@ -24,10 +26,11 @@ impl Mutation {
     ///
     /// This function will return an error if failed to create a new game.
     /// Most likely cause is being unable to connect to the database.
-    async fn new_game(context: &MongoClient,
-                      
-                      #[graphql(default = "words")] 
-                      word: String) -> FieldResult<String> {
+    async fn new_game(
+        context: &MongoClient,
+
+        #[graphql(default = "words")] word: String,
+    ) -> FieldResult<String> {
         let games: Collection<Game> = game_collection(context);
 
         let mut new_game = Game::new_game(word.as_str());
@@ -59,9 +62,11 @@ impl Mutation {
 
     /// Testing creation of new game by providing a id instead of letting program generate one.
     /// Also testing default arguments.
-    async fn test_new_game(context: &MongoClient, id: String,
-                           #[graphql(default = "words")]
-                           word: String) -> FieldResult<String> {
+    async fn test_new_game(
+        context: &MongoClient,
+        id: String,
+        #[graphql(default = "words")] word: String,
+    ) -> FieldResult<String> {
         let games: Collection<Game> = game_collection(context);
         let mut new_game = Game::new_game(word.as_str());
         new_game.set_id(&id);
@@ -104,7 +109,7 @@ impl Mutation {
     ///
     /// # Errors
     ///
-    /// This function will return an error if failed to delete the query.
+    /// This function will return an error if failed to execute the delete query.
     /// Most likely cause is a connection error to database.
     async fn remove_games(context: &MongoClient) -> FieldResult<bool> {
         let games: Collection<Game> = game_collection(context);
@@ -123,7 +128,41 @@ impl Mutation {
     }
 
     /// Adds a turn to the round in the database.
-    async fn add_turn(_context: &MongoClient, _round_id: String, _turn: NewTurn) -> FieldResult<bool> {
-        Ok(true)
+    /// Returns the updated letterpool state of the round.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if failed to execute the find query.
+    /// Most likely cause is a connection error to database.
+    #[allow(
+        non_snake_case,
+        reason = "need similar variable name game_id, one for argument/graphql query and one for use within function"
+    )]
+    async fn add_turn(context: &MongoClient, gameID: String, turn: NewTurn) -> FieldResult<U54> {
+        let games: Collection<Game> = game_collection(context);
+        let game_id = Game::parse_id(&gameID)?;
+        // using gameid, get game needed from db, so we can get the letterpoolstate of the current round
+        let find_game_query = doc! {"_id": &game_id};
+        let find_game_result = games.find_one(find_game_query, None).await;
+
+        let mut game: Game = match find_game_result {
+            Err(e) => return Err(GraphqlServerError::new(e.to_string(), &CODE500).into_field_error()),
+
+            Ok(queried_game) => match queried_game {
+                None => return Err(GraphqlServerError::new(
+                    "Server made unexpected response by returning nothing instead of empty result to query.".to_string(),
+                    &CODE500
+                )
+                .into_field_error()),
+
+                Some(game) => game
+            }
+        };
+        // any error occured with the query, we return immediately with an error
+        // so going forth, we have a game to work with
+        game.update_round_with_new_turn(turn);
+
+        // placeholder return
+        Ok(game.letterpool_state())
     }
 }

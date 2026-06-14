@@ -15,8 +15,6 @@ use self::scalars::*;
 
 // This file contains the models/objects represented within the graphql server
 
-
-
 /// A turn turn made by some player.
 #[derive(Debug, GraphQLObject, Serialize, Deserialize)]
 pub struct Turn {
@@ -29,7 +27,7 @@ pub struct Turn {
 }
 
 /// A new turn made by some player. Essentially same as ```Turn```, but used for graphql arguments.
-#[derive(Debug, GraphQLInputObject, Serialize, Deserialize)]
+#[derive(Debug, GraphQLInputObject, Serialize, Deserialize, Clone)]
 pub struct NewTurn {
     /// The word guessed by the player.
     guess: String,
@@ -37,6 +35,15 @@ pub struct NewTurn {
     /// The states of each letter of ```guess```.
     /// Clients need to encode the letter states and the bytes are stored as an ```int```.
     letter_state: U16,
+}
+
+impl Into<Turn> for NewTurn {
+    fn into(self) -> Turn {
+        Turn {
+            guessed_word: self.guess,
+            letter_state: self.letter_state,
+        }
+    }
 }
 
 /// The player type, either player 1 or player 2
@@ -97,11 +104,10 @@ pub struct UpdateRound {
 pub struct Game {
     /// The id of a Game. Used by the database to identify each document.
     _id: String,
-     // work with string instead of Uuid as mongodb stores a Uuid as some sort of object
+    // work with string instead of Uuid as mongodb stores a Uuid as some sort of object
     // that is hard to recreate as a rust object when trying to query from this server
     // as uuid doesn't properly serialize into bson for queries
     // and can't use bson::uuid type for a GraphQLObject which does serialize well
-
     /// The current round that is being played.
     current_round: Round,
 
@@ -169,8 +175,30 @@ impl Game {
             )),
         }
     }
-}
 
+    /// Updates the current round with a new turn made.
+    /// This means 2 things are updated for the current round:
+    /// - the turns vector
+    /// - the letterpool_state
+    pub fn update_round_with_new_turn(&mut self, new_turn: NewTurn) {
+        // need to clone new_turn as will needs its value twice
+        let new_turn_clone = new_turn.clone();
+
+        // add new turn
+        let turns: &mut Vec<Turn> = self.current_round.turns.as_mut();
+        turns.push(new_turn_clone.into());
+
+        // update letterpool_state
+        self.current_round
+            .letterpool_state
+            .encode_guess_results(&new_turn.guess, &new_turn.letter_state);
+    }
+
+    /// Gets the letterpool_state of the current round of the game.
+    pub fn letterpool_state(&self) -> U54 {
+        self.current_round.letterpool_state
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -184,7 +212,7 @@ mod tests {
         assert_eq!(game.current_round.current_player, round.current_player);
         assert_eq!(game.current_round.target_word, round.target_word);
     }
-    
+
     #[test]
     fn storing_unsigned_ints_for_p1_points() {
         let mut game = Game::new_game("pizza");
@@ -232,7 +260,6 @@ mod tests {
 
         // should panic due to overflow as go past limit
         game.round_num += 1;
-
     }
 
     #[test]
@@ -244,7 +271,6 @@ mod tests {
 
         // should panic due to overflow as go below 0
         game.round_num -= 1;
-
     }
 
     #[test]
@@ -255,12 +281,14 @@ mod tests {
         // expect this to work as it should be able to hold this
     }
 
-
     #[test]
     #[should_panic]
     fn letterpool_in_guess_should_overflow_past_u16() {
-        let mut guess: Turn = Turn { guessed_word: String::from("hello"), letter_state: U16::from(0) };
-        
+        let mut guess: Turn = Turn {
+            guessed_word: String::from("hello"),
+            letter_state: U16::from(0),
+        };
+
         guess.letter_state = u16::MAX.try_into().unwrap();
 
         // should now panic is try to overflow using addition
@@ -270,7 +298,10 @@ mod tests {
     #[test]
     #[should_panic]
     fn letterpool_in_guess_should_overflow_below_zero() {
-        let mut guess: Turn = Turn { guessed_word: String::from("hello"), letter_state: U16::from(0) };
+        let mut guess: Turn = Turn {
+            guessed_word: String::from("hello"),
+            letter_state: U16::from(0),
+        };
 
         // should panic as try to overflow with subtraction
         guess.letter_state -= 1;
@@ -279,11 +310,16 @@ mod tests {
     #[test]
     #[should_panic]
     fn guess_num_should_overflow_past_u8() {
-        let mut round: Round = Round { turns: Vec::new(), letterpool_state: U54::from(0), guess_num: U8::from(0), 
-            current_player: Player::P1, target_word: String::from("pizza") };
-        
+        let mut round: Round = Round {
+            turns: Vec::new(),
+            letterpool_state: U54::from(0),
+            guess_num: U8::from(0),
+            current_player: Player::P1,
+            target_word: String::from("pizza"),
+        };
+
         round.guess_num = u8::MAX.try_into().unwrap();
-        
+
         // this should overflow, don't want guess_num to go above 255
         round.guess_num += 1;
     }
@@ -291,11 +327,15 @@ mod tests {
     #[test]
     #[should_panic]
     fn guess_num_should_overflow_below_zero() {
-                let mut round: Round = Round { turns: Vec::new(), letterpool_state: U54::from(0), guess_num: U8::from(0), 
-            current_player: Player::P1, target_word: String::from("pizza") };
-        
+        let mut round: Round = Round {
+            turns: Vec::new(),
+            letterpool_state: U54::from(0),
+            guess_num: U8::from(0),
+            current_player: Player::P1,
+            target_word: String::from("pizza"),
+        };
+
         // this should overflow, don't want guess_num to be negative
         round.guess_num -= 1;
     }
-
 }

@@ -1,12 +1,12 @@
 use std::ops::{AddAssign, BitOr, BitOrAssign, SubAssign};
 
+use asserting::prelude::*;
 use juniper::{GraphQLScalar, InputValue, ScalarValue, Value};
 use serde::{Deserialize, Serialize};
-use asserting::prelude::*;
 
 use super::encoding::LetterState;
 
-#[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 #[graphql(parse_token(f64))]
 /// A custom scalar to represent an unsigned 54-bit integer.
 /// Main use is to encode the letterpool of a round.
@@ -30,7 +30,7 @@ impl U54 {
 
     fn from_input<S>(v: &InputValue<S>) -> Result<Self, String>
     where
-        S: ScalarValue
+        S: ScalarValue,
     {
         let num: Option<f64> = v.as_float_value();
         match num {
@@ -57,7 +57,6 @@ impl U54 {
     fn set(&mut self, value: u64) {
         self.0 = value
     }
-
 }
 
 impl From<u64> for U54 {
@@ -78,7 +77,6 @@ impl From<f64> for U54 {
     }
 }
 
-
 impl AddAssign<i32> for U54 {
     fn add_assign(&mut self, rhs: i32) {
         self.0 += rhs as u64;
@@ -87,7 +85,7 @@ impl AddAssign<i32> for U54 {
 
 impl AddAssign<f64> for U54 {
     fn add_assign(&mut self, rhs: f64) {
-        self.0 += rhs as u64; // overflow can occur here  
+        self.0 += rhs as u64; // overflow can occur here
     }
 }
 
@@ -129,7 +127,7 @@ impl BitOr<u64> for U54 {
     }
 }
 
-#[derive(GraphQLScalar, Debug, Serialize, Deserialize)]
+#[derive(GraphQLScalar, Debug, Serialize, Deserialize, Clone, Copy)]
 #[graphql(parse_token(f64))]
 /// A custom scalar to represent an unsigned 32-bit integer.
 pub struct U32(u32);
@@ -142,7 +140,7 @@ impl U32 {
 
     fn from_input<S>(v: &InputValue<S>) -> Result<Self, String>
     where
-        S: ScalarValue
+        S: ScalarValue,
     {
         let num: Option<f64> = v.as_float_value();
         match num {
@@ -179,13 +177,13 @@ impl From<f64> for U32 {
 
 impl AddAssign<i32> for U32 {
     fn add_assign(&mut self, rhs: i32) {
-        self.0 += rhs as u32; // overflow can occur here  
+        self.0 += rhs as u32; // overflow can occur here
     }
 }
 
 impl AddAssign<f64> for U32 {
     fn add_assign(&mut self, rhs: f64) {
-        self.0 += rhs as u32; // overflow can occur here  
+        self.0 += rhs as u32; // overflow can occur here
     }
 }
 
@@ -213,7 +211,7 @@ impl SubAssign<u32> for U32 {
     }
 }
 
-#[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(GraphQLScalar, Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Copy)]
 #[graphql(parse_token(i32))]
 /// A custom scalar to represent an unsigned 16-bit integer.
 pub struct U16(u16);
@@ -226,7 +224,7 @@ impl U16 {
 
     fn from_input<S>(v: &InputValue<S>) -> Result<Self, String>
     where
-        S: ScalarValue
+        S: ScalarValue,
     {
         let num: Option<i32> = v.as_int_value();
         match num {
@@ -279,8 +277,6 @@ impl Into<u16> for U16 {
     }
 }
 
-
-
 impl From<Vec<LetterState>> for U16 {
     fn from(value: Vec<LetterState>) -> Self {
         assert_that!(value.len()).is_less_than(9);
@@ -295,7 +291,6 @@ impl From<Vec<LetterState>> for U16 {
 
         U16(num)
     }
-    
 }
 impl Into<Vec<LetterState>> for U16 {
     fn into(self) -> Vec<LetterState> {
@@ -342,7 +337,6 @@ impl From<Vec<u8>> for U16 {
 
         U16(num)
     }
-    
 }
 impl From<Vec<&u8>> for U16 {
     fn from(value: Vec<&u8>) -> Self {
@@ -358,7 +352,6 @@ impl From<Vec<&u8>> for U16 {
 
         U16(num)
     }
-    
 }
 impl Into<Vec<u8>> for U16 {
     fn into(self) -> Vec<u8> {
@@ -389,13 +382,12 @@ impl Into<Vec<u8>> for &U16 {
     }
 }
 
-
 impl AddAssign<i32> for U16 {
     fn add_assign(&mut self, rhs: i32) {
         // change up style of addition as now i32 is a larger range than u16
         // so conversion back should cause errors to throw (due to overflow)
         let sum: i32 = i32::from(self.0) + rhs;
-        self.0 = sum.try_into().unwrap()    // overflow occured
+        self.0 = sum.try_into().unwrap() // overflow occured
     }
 }
 impl AddAssign<u16> for U16 {
@@ -407,7 +399,7 @@ impl AddAssign<u16> for U16 {
 impl SubAssign<i32> for U16 {
     fn sub_assign(&mut self, rhs: i32) {
         let sum: i32 = i32::from(self.0) - rhs;
-        self.0 = sum.try_into().unwrap()    // overflow occured
+        self.0 = sum.try_into().unwrap() // overflow occured
     }
 }
 
@@ -444,7 +436,7 @@ impl U8 {
 
     fn from_input<S>(v: &InputValue<S>) -> Result<Self, String>
     where
-        S: ScalarValue
+        S: ScalarValue,
     {
         let num: Option<i32> = v.as_int_value();
         match num {
@@ -476,7 +468,7 @@ impl From<i32> for U8 {
 impl AddAssign<i32> for U8 {
     fn add_assign(&mut self, rhs: i32) {
         let sum: i32 = i32::from(self.0) + rhs;
-        self.0 = sum.try_into().unwrap()    // overflow occured
+        self.0 = sum.try_into().unwrap() // overflow occured
     }
 }
 impl AddAssign<u8> for U8 {
@@ -488,7 +480,7 @@ impl AddAssign<u8> for U8 {
 impl SubAssign<i32> for U8 {
     fn sub_assign(&mut self, rhs: i32) {
         let sum: i32 = i32::from(self.0) - rhs;
-        self.0 = sum.try_into().unwrap()    // overflow occured
+        self.0 = sum.try_into().unwrap() // overflow occured
     }
 }
 
