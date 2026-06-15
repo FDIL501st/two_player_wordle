@@ -139,6 +139,9 @@ impl Mutation {
         reason = "need similar variable name game_id, one for argument/graphql query and one for use within function"
     )]
     async fn add_turn(context: &MongoClient, gameID: String, turn: NewTurn) -> FieldResult<U54> {
+        // TODO: make return type Round, so clients can simply have option to get everything or what they need
+        // also maybe change argument type to UpdateRound?
+
         let games: Collection<Game> = game_collection(context);
         let game_id = Game::parse_id(&gameID)?;
         // using gameid, get game needed from db, so we can get the letterpoolstate of the current round
@@ -146,18 +149,25 @@ impl Mutation {
         let find_game_result = games.find_one(find_game_query, None).await;
 
         let mut game: Game = match find_game_result {
-            Err(e) => return Err(GraphqlServerError::new(e.to_string(), &CODE500).into_field_error()),
+            Err(e) => {
+                return Err(GraphqlServerError::new(e.to_string(), &CODE500).into_field_error())
+            }
 
             Ok(queried_game) => match queried_game {
-                None => return Err(GraphqlServerError::new(
-                    "Server made unexpected response by returning nothing instead of empty result to query.".to_string(),
-                    &CODE500
-                )
-                .into_field_error()),
+                None => {
+                    return Err(GraphqlServerError::new(
+                        "Game not found. Game with gameID does not exist within the database"
+                            .to_string(),
+                        &CODE500,
+                    )
+                    .into_field_error())
+                }
 
-                Some(game) => game
-            }
+                Some(game) => game,
+            },
         };
+        // Note: is it possible for empty query to be returned instead of None?
+
         // any error occured with the query, we return immediately with an error
         // so going forth, we have a game to work with
         game.update_round_with_new_turn(turn);
